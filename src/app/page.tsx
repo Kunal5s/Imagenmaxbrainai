@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import SuggestionDialog from '@/components/suggestion-dialog';
+import ImageGenerator from '@/components/image-generator';
 
 const galleryImages = [
   {
@@ -51,6 +52,10 @@ type GalleryImage = typeof galleryImages[0];
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
+  const handleScrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="py-6 px-4 md:px-8 border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
@@ -59,7 +64,7 @@ export default function Home() {
             <BrainCircuit className="w-8 h-8 text-primary" />
             <h1 className="text-2xl font-headline font-bold text-foreground">ImagenBrain AI</h1>
           </div>
-          <Button variant="outline" className="font-bold">
+          <Button variant="outline" className="font-bold" onClick={() => handleScrollTo('create')}>
             Get Started
           </Button>
         </div>
@@ -74,12 +79,14 @@ export default function Home() {
             Turn your imagination into stunning visuals. ImagenBrain AI offers a powerful toolset to generate and refine images, enhanced by intelligent suggestions to perfect your creations.
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" className="font-bold">Start Creating</Button>
-            <Button size="lg" variant="secondary" className="font-bold">Explore Gallery</Button>
+            <Button size="lg" className="font-bold" onClick={() => handleScrollTo('create')}>Start Creating</Button>
+            <Button size="lg" variant="secondary" className="font-bold" onClick={() => handleScrollTo('latest-creations')}>Explore Gallery</Button>
           </div>
         </section>
 
-        <section className="container mx-auto py-12 px-4">
+        <ImageGenerator />
+
+        <section id="latest-creations" className="container mx-auto py-12 px-4">
           <h3 className="text-4xl font-headline font-bold text-center mb-12">Latest Creations</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {galleryImages.map((image) => (
