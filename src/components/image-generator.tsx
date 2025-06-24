@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Wand2, Loader2, Download, Image as ImageIcon } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
+import { suggestPrompts } from '@/ai/flows/suggest-prompt-flow';
+import { Input } from './ui/input';
+import { Badge } from './ui/badge';
 
 const formSchema = z.object({
   prompt: z.string().min(1, 'Prompt is required.'),
@@ -45,6 +48,9 @@ const options = {
 
 export default function ImageGenerator() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestionIdea, setSuggestionIdea] = useState('');
+  const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
   const [generatedImages, setGeneratedImages] = useState<string[] | null>(null);
   const { toast } = useToast();
 
@@ -59,6 +65,38 @@ export default function ImageGenerator() {
       colors: options.colors[0],
     },
   });
+
+  const handleSuggestPrompts = async () => {
+    if (!suggestionIdea) {
+      toast({
+        title: 'Idea Required',
+        description: 'Please enter an idea to get suggestions.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsSuggesting(true);
+    setPromptSuggestions([]);
+    try {
+      const result = await suggestPrompts({ idea: suggestionIdea });
+      setPromptSuggestions(result.suggestions);
+    } catch (error) {
+      console.error('Failed to suggest prompts', error);
+      toast({
+        title: 'Suggestion Failed',
+        description: 'Could not generate prompt suggestions. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    form.setValue('prompt', suggestion);
+    setPromptSuggestions([]);
+    setSuggestionIdea('');
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
@@ -108,6 +146,43 @@ export default function ImageGenerator() {
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            
+                            <div className="space-y-3">
+                                <FormLabel className="font-bold">Get Inspired (Optional)</FormLabel>
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="e.g., 'a cat in space'"
+                                        value={suggestionIdea}
+                                        onChange={(e) => setSuggestionIdea(e.target.value)}
+                                        disabled={isSuggesting}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleSuggestPrompts}
+                                        disabled={isSuggesting}
+                                        className="whitespace-nowrap"
+                                    >
+                                        {isSuggesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                        Suggest
+                                    </Button>
+                                </div>
+                                {promptSuggestions.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        {promptSuggestions.map((suggestion, index) => (
+                                            <Badge
+                                                key={index}
+                                                variant="secondary"
+                                                className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-left h-auto"
+                                                onClick={() => handleSuggestionClick(suggestion)}
+                                            >
+                                                {suggestion}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
                             <FormField
                                 control={form.control}
                                 name="prompt"
