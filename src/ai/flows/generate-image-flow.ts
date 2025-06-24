@@ -40,29 +40,36 @@ const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async (input) => {
-    let fullPrompt = `${input.prompt}`;
+    const promptParts = [
+        `Primary Subject: ${input.prompt}.`,
+        `You are a master digital artist. Create a visually stunning image based *strictly* on the following creative controls.`
+    ];
 
     if (input.style) {
-      fullPrompt += `, in the style of ${input.style}`;
+        promptParts.push(`Artistic Style: This is the most critical instruction. The image must be in a '${input.style}' style.`);
     }
     if (input.mood) {
-      fullPrompt += `, with a ${input.mood} mood`;
+        promptParts.push(`Overall Mood: The entire scene must evoke a '${input.mood}' feeling. This should influence the colors, lighting, and composition.`);
     }
     if (input.lighting) {
-      fullPrompt += `, using ${input.lighting} lighting`;
+        promptParts.push(`Lighting: The lighting is a dominant feature. It must be '${input.lighting}' lighting.`);
+    }
+    if (input.colorPalette && input.colorPalette !== 'Default') {
+        promptParts.push(`Color Palette: The color scheme must be strictly based on a '${input.colorPalette}' palette.`);
     }
     if (input.aspectRatio) {
-      fullPrompt += `, aspect ratio ${input.aspectRatio.match(/\((.*?)\)/)?.[1] || input.aspectRatio}`;
-    }
-    if (input.colorPalette) {
-      fullPrompt += `, with a ${input.colorPalette} color palette`;
+        const ratio = input.aspectRatio.match(/\((.*?)\)/)?.[1] || input.aspectRatio;
+        promptParts.push(`The final image must have an aspect ratio of ${ratio}.`);
     }
 
     if (input.quality === '4K Quality') {
-        fullPrompt += ', 4K, ultra-high resolution, photorealistic, ultra-detailed, professional photography.';
+        promptParts.push('Final Output Requirements: 4K, ultra-high resolution, photorealistic detail, professional photography quality, extremely detailed, intricate, sharp focus.');
     } else {
-        fullPrompt += '. Highly detailed, professional quality.';
+        promptParts.push('Final Output Requirements: High quality, professional, detailed, clear focus.');
     }
+    
+    const fullPrompt = promptParts.join(' ');
+
 
     const generationPromises = Array(4).fill(null).map(() => 
         ai.generate({
