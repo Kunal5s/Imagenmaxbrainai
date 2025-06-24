@@ -13,6 +13,11 @@ import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
   prompt: z.string().describe('The main text prompt for the image.'),
+  style: z.string().optional().describe('The artistic style of the image.'),
+  aspectRatio: z.string().optional().describe('The aspect ratio of the image.'),
+  mood: z.string().optional().describe('The emotional mood of the image.'),
+  lighting: z.string().optional().describe('The lighting style of the image.'),
+  colors: z.array(z.string()).optional().describe('A palette of prominent colors for the image.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -34,18 +39,34 @@ const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async (input) => {
-    const fullPrompt = input.prompt;
+    let fullPrompt = `${input.prompt}`;
+
+    if (input.style) {
+      fullPrompt += `, in the style of ${input.style}`;
+    }
+    if (input.mood) {
+      fullPrompt += `, with a ${input.mood} mood`;
+    }
+    if (input.lighting) {
+      fullPrompt += `, using ${input.lighting} lighting`;
+    }
+    if (input.aspectRatio) {
+      fullPrompt += `, aspect ratio ${input.aspectRatio}`;
+    }
+    if (input.colors && input.colors.filter(c => c).length > 0) {
+      fullPrompt += `, with a color palette focusing on ${input.colors.filter(c => c).join(', ')}`;
+    }
+
+    fullPrompt += '. Highly detailed, 8k, professional quality.'
 
     const imageDataUris: string[] = [];
-
-    // Generate 4 images sequentially to avoid rate-limiting issues.
-    for (let i = 0; i < 4; i++) {
-        const result = await ai.generate({
+    const generationPromises = Array(4).fill(null).map(() => 
+        ai.generate({
             model: 'googleai/gemini-2.0-flash-preview-image-generation',
             prompt: fullPrompt,
             config: {
                 responseModalities: ['TEXT', 'IMAGE'],
-                safetySettings: [
+                 safetySettings: [
                   {
                     category: 'HARM_CATEGORY_HATE_SPEECH',
                     threshold: 'BLOCK_ONLY_HIGH',
@@ -64,8 +85,12 @@ const generateImageFlow = ai.defineFlow(
                   },
                 ]
             },
-        });
+        })
+    );
 
+    const results = await Promise.all(generationPromises);
+
+    for (const result of results) {
         const { media } = result;
         if (!media?.url) {
             const finishReason = result.candidates[0]?.finishReason;
