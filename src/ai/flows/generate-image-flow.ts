@@ -17,7 +17,7 @@ const GenerateImageInputSchema = z.object({
   aspectRatio: z.string().optional().describe('The aspect ratio of the image.'),
   mood: z.string().optional().describe('The emotional mood of the image.'),
   lighting: z.string().optional().describe('The lighting style of the image.'),
-  colors: z.array(z.string()).optional().describe('A palette of prominent colors for the image.'),
+  colorPalette: z.string().optional().describe('A predefined color palette for the image.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -51,10 +51,10 @@ const generateImageFlow = ai.defineFlow(
       fullPrompt += `, using ${input.lighting} lighting`;
     }
     if (input.aspectRatio) {
-      fullPrompt += `, aspect ratio ${input.aspectRatio}`;
+      fullPrompt += `, aspect ratio ${input.aspectRatio.match(/\((.*?)\)/)?.[1] || input.aspectRatio}`;
     }
-    if (input.colors && input.colors.filter(c => c).length > 0) {
-      fullPrompt += `, with a color palette focusing on ${input.colors.filter(c => c).join(', ')}`;
+    if (input.colorPalette) {
+      fullPrompt += `, with a ${input.colorPalette} color palette`;
     }
 
     fullPrompt += '. Highly detailed, 8k, professional quality.'

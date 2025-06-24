@@ -2,8 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush } from 'lucide-react';
 import Image from 'next/image';
+import { cn } from "@/lib/utils";
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,13 +14,27 @@ import { suggestPrompts } from '@/ai/flows/suggest-prompt-flow';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-const styles = ["Photographic", "Digital Art", "Anime", "Fantasy", "Sci-Fi", "Comic Book", "Cinematic", "3D Model"];
-const aspectRatios = ["Square (1:1)", "Portrait (9:16)", "Landscape (16:9)", "Wide (21:9)"];
-const moods = ["Happy", "Sad", "Dramatic", "Mysterious", "Calm", "Energetic", "Romantic"];
-const lightings = ["Soft", "Hard", "Cinematic", "Rembrandt", "Backlight", "Studio"];
+const styles = ["Photographic", "Digital Art", "Anime", "Cartoon", "Comic Book", "Cinematic", "3D Model", "Pixel Art", "Isometric", "Watercolor", "Impressionistic", "Surrealist", "Pop Art", "Minimalist", "Abstract", "Gouache", "Line Art", "Charcoal Sketch", "8-bit", "Woodblock Print", "Vintage Photography", "Double Exposure"];
+const aspectRatios = ["Square (1:1)", "Portrait (4:5)", "Tall Portrait (9:16)", "Classic Portrait (2:3)", "Landscape (5:4)", "Widescreen (16:9)", "Classic Landscape (3:2)", "Cinematic (2.39:1)", "Ultra Wide (3:1)", "Banner (4:1)"];
+const moods = ["Cyberpunk", "Dreamy", "Gothic", "Kawaii", "Steampunk", "Wasteland", "Whimsical", "Melancholic", "Nostalgic", "Serene", "Tense", "Utopian", "Dystopian", "Mysterious", "Energetic"];
+const lightings = ["Bright", "Neon", "Misty", "Ethereal", "Sunset", "Golden Hour", "Blue Hour", "Volumetric", "Soft", "Hard", "Rembrandt", "Backlight"];
+const colorPalettes = ["Default", "Cool Tones", "Warm Tones", "Pastel Dreams", "Indigo Night", "Infrared Vision", "Monochromatic", "Earthy Tones", "Vibrant Neon", "Vintage Sepia", "Synthwave"];
+
+const aspectRatioClasses: { [key: string]: string } = {
+    'Square (1:1)': 'aspect-square',
+    'Portrait (4:5)': 'aspect-[4/5]',
+    'Tall Portrait (9:16)': 'aspect-[9/16]',
+    'Classic Portrait (2:3)': 'aspect-[2/3]',
+    'Landscape (5:4)': 'aspect-[5/4]',
+    'Widescreen (16:9)': 'aspect-[16/9]',
+    'Classic Landscape (3:2)': 'aspect-[3/2]',
+    'Cinematic (2.39:1)': 'aspect-[2.39/1]',
+    'Ultra Wide (3:1)': 'aspect-[3/1]',
+    'Banner (4:1)': 'aspect-[4/1]',
+};
+
 
 interface GenerationSettings {
   prompt: string;
@@ -27,16 +42,16 @@ interface GenerationSettings {
   aspectRatio: string;
   mood: string;
   lighting: string;
-  colors: [string, string, string];
+  colorPalette: string;
 }
 
 const defaultSettings: GenerationSettings = {
   prompt: 'A majestic lion wearing a crown, sitting on a throne in a cosmic library.',
   style: 'Photographic',
   aspectRatio: 'Square (1:1)',
-  mood: 'Dramatic',
+  mood: 'Mysterious',
   lighting: 'Cinematic',
-  colors: ['#FFD700', '#4B0082', '#FFFFFF'],
+  colorPalette: 'Default',
 };
 
 
@@ -68,18 +83,10 @@ export default function ImageGenerator() {
     }
   }, [settings]);
 
-  const handleSettingChange = (key: keyof Omit<GenerationSettings, 'colors'>, value: string) => {
+  const handleSettingChange = (key: keyof GenerationSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
-
-  const handleColorChange = (index: number, value: string) => {
-    setSettings(prev => {
-      const newColors: [string, string, string] = [...prev.colors];
-      newColors[index] = value;
-      return { ...prev, colors: newColors };
-    });
-  };
-
+  
   const handleSuggestPrompts = async () => {
     if (!settings.prompt) {
       toast({ title: 'Prompt Required', description: 'Please enter an idea to get suggestions.', variant: 'destructive' });
@@ -115,7 +122,7 @@ export default function ImageGenerator() {
         aspectRatio: settings.aspectRatio,
         mood: settings.mood,
         lighting: settings.lighting,
-        colors: settings.colors.filter(c => c.trim() !== ''),
+        colorPalette: settings.colorPalette === 'Default' ? undefined : settings.colorPalette,
       };
       const result = await generateImage(input);
       setGeneratedImages(result.imageDataUris);
@@ -185,7 +192,7 @@ export default function ImageGenerator() {
                   <AccordionContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                       <div className="space-y-2">
-                        <Label><Palette className="inline-block mr-2 h-4 w-4" />Style</Label>
+                        <Label><Paintbrush className="inline-block mr-2 h-4 w-4" />Artistic Style</Label>
                         <Select value={settings.style} onValueChange={(v) => handleSettingChange('style', v)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>{styles.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
@@ -212,13 +219,12 @@ export default function ImageGenerator() {
                            <SelectContent>{lightings.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                          </Select>
                       </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <Label>Color Palette</Label>
-                        <div className="grid grid-cols-3 gap-2">
-                          <Input placeholder="#FFD700" value={settings.colors[0]} onChange={(e) => handleColorChange(0, e.target.value)} />
-                          <Input placeholder="#4B0082" value={settings.colors[1]} onChange={(e) => handleColorChange(1, e.target.value)} />
-                          <Input placeholder="#FFFFFF" value={settings.colors[2]} onChange={(e) => handleColorChange(2, e.target.value)} />
-                        </div>
+                      <div className="space-y-2">
+                         <Label><Palette className="inline-block mr-2 h-4 w-4" />Color Palette</Label>
+                         <Select value={settings.colorPalette} onValueChange={(v) => handleSettingChange('colorPalette', v)}>
+                           <SelectTrigger><SelectValue /></SelectTrigger>
+                           <SelectContent>{colorPalettes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                         </Select>
                       </div>
                     </div>
                   </AccordionContent>
@@ -244,7 +250,7 @@ export default function ImageGenerator() {
         {!isLoading && generatedImages && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {generatedImages.map((imageSrc, index) => (
-              <div key={index} className="relative aspect-square w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg" style={{ animationDelay: `${index * 150}ms` }}>
+              <div key={index} className={cn("relative w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg", aspectRatioClasses[settings.aspectRatio] || 'aspect-square')} style={{ animationDelay: `${index * 150}ms` }}>
                 <Image src={imageSrc} alt={`Generated AI Image ${index + 1}`} fill className="object-cover" />
                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Button variant="secondary" size="sm" onClick={() => handleDownload(imageSrc, index)}>
