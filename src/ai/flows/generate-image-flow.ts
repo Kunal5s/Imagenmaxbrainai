@@ -47,7 +47,7 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join(', ');
     
     // Using a powerful Imagen model available through Vertex AI to ensure high-quality results.
-    const imageModel = 'imagegeneration@006';
+    const imageModel = 'imagegeneration@005';
 
     const generationRequest: any = {
         model: imageModel,
