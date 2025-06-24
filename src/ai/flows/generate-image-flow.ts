@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI image generator.
@@ -56,12 +57,34 @@ const generateImageFlow = ai.defineFlow(
             prompt: fullPrompt,
             config: {
                 responseModalities: ['TEXT', 'IMAGE'],
+                safetySettings: [
+                  {
+                    category: 'HARM_CATEGORY_HATE_SPEECH',
+                    threshold: 'BLOCK_ONLY_HIGH',
+                  },
+                  {
+                    category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                    threshold: 'BLOCK_ONLY_HIGH',
+                  },
+                  {
+                    category: 'HARM_CATEGORY_HARASSMENT',
+                    threshold: 'BLOCK_ONLY_HIGH',
+                  },
+                  {
+                    category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                    threshold: 'BLOCK_ONLY_HIGH',
+                  },
+                ]
             },
         });
 
         const { media } = result;
         if (!media?.url) {
-            const errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred during image generation.';
+            const finishReason = result.candidates[0]?.finishReason;
+            let errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred during image generation.';
+            if (finishReason === 'SAFETY') {
+              errorMessage = 'The generated content was blocked due to safety settings. Please try a different prompt.';
+            }
             throw new Error(`Image generation failed: ${errorMessage}`);
         }
         imageDataUris.push(media.url);
