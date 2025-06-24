@@ -21,15 +21,36 @@ const GenerateImageInputSchema = z.object({
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
 const GenerateImageOutputSchema = z.object({
-  imageDataUri: z
-    .string()
-    .describe('The generated image as a data URI.'),
+  imageDataUris: z
+    .array(z.string())
+    .describe('The generated images as data URIs.'),
 });
 export type GenerateImageOutput = z.infer<typeof GenerateImageOutputSchema>;
 
 export async function generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
   return generateImageFlow(input);
 }
+
+// Helper to map UI ratios to API-supported ratios
+const getApiAspectRatio = (ratio: string | undefined) => {
+    switch (ratio) {
+        case '1:1':
+        case '5:4':
+            return 'SQUARE';
+        case '9:16':
+        case '3:4':
+        case '2:3':
+        case '4:5':
+            return 'PORTRAIT';
+        case '16:9':
+        case '4:3':
+        case '3:2':
+        case '2.39:1':
+        default:
+            return 'LANDSCAPE';
+    }
+}
+
 
 const generateImageFlow = ai.defineFlow(
   {
@@ -46,19 +67,27 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `Colors: ${input.colors}`,
     ].filter(Boolean).join('. ');
 
-    const {media} = await ai.generate({
+    const generationConfig = {
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: fullPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
-        aspectRatio: input.ratio === '1:1' ? 'SQUARE' : input.ratio === '9:16' ? 'PORTRAIT' : 'LANDSCAPE',
+        aspectRatio: getApiAspectRatio(input.ratio),
       },
+    } as const;
+
+    // Create 4 parallel generation requests
+    const imagePromises = Array(4).fill(null).map(() => ai.generate(generationConfig));
+
+    const results = await Promise.all(imagePromises);
+
+    const imageDataUris = results.map(result => {
+        if (!result.media?.url) {
+            throw new Error('An image generation request failed to return an image.');
+        }
+        return result.media.url;
     });
 
-    if (!media?.url) {
-      throw new Error('Image generation failed to return an image.');
-    }
-
-    return { imageDataUri: media.url };
+    return { imageDataUris };
   }
 );
