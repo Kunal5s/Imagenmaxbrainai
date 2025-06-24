@@ -46,24 +46,25 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `with a ${input.colors} color palette`,
     ].filter(Boolean).join(', ');
     
-    const generationRequest: any = {
-        model: 'googleai/imagegeneration@005',
+    // We will generate 4 images by calling the model 4 times in parallel.
+    const imagePromises = Array(4).fill(null).map(async () => {
+      const {media} = await ai.generate({
+        model: 'googleai/gemini-2.0-flash-preview-image-generation',
         prompt: fullPrompt,
-        candidates: 4,
-    };
+        config: {
+          responseModalities: ['TEXT', 'IMAGE'],
+          // Aspect ratio is not directly supported by this model in this way.
+          // The model will determine the best aspect ratio based on the prompt.
+        },
+      });
 
-    if (input.ratio) {
-        generationRequest.aspectRatio = input.ratio;
-    }
-
-    const result = await ai.generate(generationRequest);
-    const imageDataUris = result.candidates.map(candidate => {
-        if (!candidate.media?.url) {
-            const errorMessage = candidate.finishReasonMessage || 'An unknown error occurred.';
-            throw new Error(`An image generation request failed to return an image. Reason: ${errorMessage}`);
-        }
-        return candidate.media.url;
+      if (!media?.url) {
+        throw new Error('An image generation request failed to return an image.');
+      }
+      return media.url;
     });
+
+    const imageDataUris = await Promise.all(imagePromises);
     
     return { imageDataUris };
   }
