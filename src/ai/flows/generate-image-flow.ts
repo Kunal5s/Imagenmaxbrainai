@@ -7,7 +7,7 @@
  * - GenerateImageOutput - The return type for the generateImage function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai, googleVertex} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
@@ -45,8 +45,9 @@ const generateImageFlow = ai.defineFlow(
         input.lighting && `Lighting: ${input.lighting}`,
         input.colors && `Colors: ${input.colors}`,
     ].filter(Boolean).join('. ');
-
-    const imageModel = ai.model('googleai/gemini-2.0-flash-preview-image-generation');
+    
+    // Explicitly get the model from the configured Vertex AI plugin. This is the definitive fix.
+    const imageModel = googleVertex.model('gemini-2.0-flash-preview-image-generation');
 
     const generationRequest: any = {
         model: imageModel,
