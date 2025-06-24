@@ -15,8 +15,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
 import { suggestPrompts } from '@/ai/flows/suggest-prompt-flow';
-import { Input } from './ui/input';
-import { Badge } from './ui/badge';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
   prompt: z.string().min(1, 'Prompt is required.'),
@@ -139,123 +140,134 @@ export default function ImageGenerator() {
             </p>
         </div>
         <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
-            <Card className="lg:col-span-2 border">
-                <CardHeader>
-                    <CardTitle className="font-headline text-2xl">Generation Tools</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            
-                            <div className="space-y-3">
-                                <FormLabel className="font-bold">Get Inspired (Optional)</FormLabel>
-                                <div className="flex gap-2">
-                                    <Input
-                                        placeholder="e.g., 'a cat in space'"
-                                        value={suggestionIdea}
-                                        onChange={(e) => setSuggestionIdea(e.target.value)}
-                                        disabled={isSuggesting}
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={handleSuggestPrompts}
-                                        disabled={isSuggesting}
-                                        className="whitespace-nowrap"
-                                    >
-                                        {isSuggesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                        Suggest
-                                    </Button>
+            <div className="lg:col-span-2 flex flex-col gap-8">
+                <Card className="border">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl flex items-center gap-2">
+                            <Sparkles className="w-6 h-6 text-primary" />
+                            Prompt Suggester
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-3">
+                            <Label htmlFor="suggestion-idea" className="font-bold">Enter a simple idea</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="suggestion-idea"
+                                    placeholder="e.g., 'a cat in space'"
+                                    value={suggestionIdea}
+                                    onChange={(e) => setSuggestionIdea(e.target.value)}
+                                    disabled={isSuggesting}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleSuggestPrompts}
+                                    disabled={isSuggesting}
+                                    className="whitespace-nowrap"
+                                >
+                                    {isSuggesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Suggest'}
+                                </Button>
+                            </div>
+                            {promptSuggestions.length > 0 && (
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                    {promptSuggestions.map((suggestion, index) => (
+                                        <Badge
+                                            key={index}
+                                            variant="secondary"
+                                            className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-left h-auto"
+                                            onClick={() => handleSuggestionClick(suggestion)}
+                                        >
+                                            {suggestion}
+                                        </Badge>
+                                    ))}
                                 </div>
-                                {promptSuggestions.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 pt-2">
-                                        {promptSuggestions.map((suggestion, index) => (
-                                            <Badge
-                                                key={index}
-                                                variant="secondary"
-                                                className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-left h-auto"
-                                                onClick={() => handleSuggestionClick(suggestion)}
-                                            >
-                                                {suggestion}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
 
-                            <FormField
-                                control={form.control}
-                                name="prompt"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold">Primary Prompt</FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                placeholder="e.g., 'A majestic lion wearing a crown, sitting on a throne in a cosmic library.'"
-                                                className="min-h-[120px]"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                <Card className="border">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl">Generation Tools</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                <FormField
+                                    control={form.control}
+                                    name="prompt"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold">Primary Prompt</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="e.g., 'A majestic lion wearing a crown, sitting on a throne in a cosmic library.'"
+                                                    className="min-h-[120px]"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                <FormField control={form.control} name="style" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold">Artistic Style</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a style" /></SelectTrigger></FormControl>
-                                            <SelectContent>{options.styles.map(style => <SelectItem key={style} value={style}>{style}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="ratio" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold">Aspect Ratio</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a ratio" /></SelectTrigger></FormControl>
-                                            <SelectContent>{options.ratios.map(ratio => <SelectItem key={ratio.value} value={ratio.value}>{ratio.label}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="mood" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold">Mood</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a mood" /></SelectTrigger></FormControl>
-                                            <SelectContent>{options.moods.map(mood => <SelectItem key={mood} value={mood}>{mood}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="lighting" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold">Lighting</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select lighting" /></SelectTrigger></FormControl>
-                                            <SelectContent>{options.lightings.map(light => <SelectItem key={light} value={light}>{light}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="colors" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold">Color Palette</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select colors" /></SelectTrigger></FormControl>
-                                            <SelectContent>{options.colors.map(color => <SelectItem key={color} value={color}>{color}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )} />
-                            </div>
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="style" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold">Artistic Style</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Select a style" /></SelectTrigger></FormControl>
+                                                <SelectContent>{options.styles.map(style => <SelectItem key={style} value={style}>{style}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="ratio" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold">Aspect Ratio</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Select a ratio" /></SelectTrigger></FormControl>
+                                                <SelectContent>{options.ratios.map(ratio => <SelectItem key={ratio.value} value={ratio.value}>{ratio.label}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="mood" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold">Mood</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Select a mood" /></SelectTrigger></FormControl>
+                                                <SelectContent>{options.moods.map(mood => <SelectItem key={mood} value={mood}>{mood}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="lighting" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold">Lighting</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Select lighting" /></SelectTrigger></FormControl>
+                                                <SelectContent>{options.lightings.map(light => <SelectItem key={light} value={light}>{light}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="colors" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold">Color Palette</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Select colors" /></SelectTrigger></FormControl>
+                                                <SelectContent>{options.colors.map(color => <SelectItem key={color} value={color}>{color}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )} />
+                                </div>
 
-                            <Button type="submit" size="lg" className="w-full font-bold hover:scale-105 transition-transform" disabled={isLoading}>
-                                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+                                <Button type="submit" size="lg" className="w-full font-bold hover:scale-105 transition-transform" disabled={isLoading}>
+                                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
+                                </Button>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
+            </div>
 
             <div className="lg:col-span-3 flex flex-col items-center justify-center bg-slate-50 rounded-lg p-6 min-h-[400px] border">
                 {isLoading && (
