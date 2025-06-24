@@ -47,17 +47,12 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join(', ');
     
     const generationRequest: any = {
-        // By specifying the provider and model name, we ensure Genkit routes this request
-        // through the Vertex AI configuration defined in `genkit.ts`. This is the
-        // most stable and reliable way to request this model.
         model: 'googleai/imagegeneration@005',
         prompt: fullPrompt,
-        // Request 4 images to be generated in a single batch call for efficiency.
         candidates: 4,
     };
 
     if (input.ratio) {
-        // Genkit normalizes aspect ratio formats for the underlying model.
         generationRequest.aspectRatio = input.ratio;
     }
 
