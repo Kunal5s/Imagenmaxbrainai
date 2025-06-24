@@ -47,20 +47,26 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `with a ${input.colors} color palette`,
     ].filter(Boolean).join(', ');
 
-    const result = await ai.generate({
-        model: 'imagegeneration@006',
-        prompt: fullPrompt,
-        config: {
-            candidateCount: 4,
-        },
-    });
+    // Generate 4 images in parallel
+    const imagePromises = Array(4).fill(null).map(() => 
+        ai.generate({
+            model: 'googleai/gemini-2.0-flash-preview-image-generation',
+            prompt: fullPrompt,
+            config: {
+                responseModalities: ['TEXT', 'IMAGE'],
+            },
+        })
+    );
 
-    const imageDataUris = result.candidates.map(candidate => {
-        if (!candidate.media?.url) {
-            const errorMessage = candidate.finishReasonMessage || 'An unknown error occurred.';
+    const results = await Promise.all(imagePromises);
+
+    const imageDataUris = results.map(result => {
+        const { media } = result;
+        if (!media?.url) {
+            const errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred during image generation.';
             throw new Error(`Image generation failed: ${errorMessage}`);
         }
-        return candidate.media.url;
+        return media.url;
     });
     
     return { imageDataUris };
