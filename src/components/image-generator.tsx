@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Terminal } from 'lucide-react';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { suggestPrompts } from '@/ai/flows/suggest-prompt-flow';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const formSchema = z.object({
   prompt: z.string().min(1, 'Prompt is required.'),
@@ -53,6 +54,7 @@ export default function ImageGenerator() {
   const [suggestionIdea, setSuggestionIdea] = useState('');
   const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
   const [generatedImages, setGeneratedImages] = useState<string[] | null>(null);
+  const [apiKeyError, setApiKeyError] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -84,6 +86,9 @@ export default function ImageGenerator() {
     } catch (error) {
       console.error('Failed to suggest prompts', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      if (errorMessage.toLowerCase().includes('api key')) {
+        setApiKeyError(true);
+      }
       toast({
         title: 'Suggestion Failed',
         description: `Could not generate prompt suggestions. ${errorMessage}`,
@@ -103,6 +108,7 @@ export default function ImageGenerator() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     setGeneratedImages(null);
+    setApiKeyError(false);
 
     try {
       const result = await generateImage(values as GenerateImageInput);
@@ -110,6 +116,11 @@ export default function ImageGenerator() {
     } catch (error) {
       console.error('Failed to generate image', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      
+      if (errorMessage.toLowerCase().includes('api key')) {
+        setApiKeyError(true);
+      }
+      
       toast({
         title: 'Image Generation Failed',
         description: `Could not generate images. ${errorMessage}`,
@@ -133,6 +144,18 @@ export default function ImageGenerator() {
 
   return (
     <section id="create" className="container mx-auto py-12 px-4">
+        {apiKeyError && (
+          <Alert variant="destructive" className="mb-8 animate-fadeInUp">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle className="font-bold text-lg">API Key Configuration Required</AlertTitle>
+            <AlertDescription className="mt-2 space-y-2">
+              <p>The image generator has failed. It seems your Google AI API Key is missing or invalid.</p>
+              <p>To fix this, please create a file named <strong>.env</strong> in your project's main directory and add the following line, replacing "YOUR_API_KEY_HERE" with your actual key:</p>
+              <pre className="mt-2 p-3 bg-slate-950 text-white rounded-md text-sm font-mono"><code>GOOGLE_API_KEY="YOUR_API_KEY_HERE"</code></pre>
+              <p>You can get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline font-medium">Google AI Studio</a>. After adding the key, please restart the application for the changes to take effect.</p>
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="text-center mb-12">
             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">
                 Create Your Vision
