@@ -41,6 +41,15 @@ const defaultSettings: GenerationSettings = {
   colorPalette: 'Default',
 };
 
+const getAspectRatioForCss = (ratioString: string | undefined): string => {
+  if (!ratioString) return '1 / 1';
+  const match = ratioString.match(/\(([^)]+)\)/);
+  if (match && match[1]) {
+    return match[1].replace(':', ' / ');
+  }
+  return '1 / 1';
+};
+
 
 export default function ImageGenerator() {
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
@@ -261,10 +270,28 @@ export default function ImageGenerator() {
         {!isLoading && generatedImages && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {generatedImages.map((imageSrc, index) => (
-              <div key={index} className={cn("relative w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg aspect-square")} style={{ animationDelay: `${index * 150}ms` }}>
-                <Image src={imageSrc} alt={`Generated AI Image ${index + 1}`} fill className="object-cover" />
+              <div
+                key={index}
+                className={cn(
+                  'relative w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg'
+                )}
+                style={{
+                  animationDelay: `${index * 150}ms`,
+                  aspectRatio: getAspectRatioForCss(settings.aspectRatio),
+                }}
+              >
+                <Image
+                  src={imageSrc}
+                  alt={`Generated AI Image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button variant="secondary" size="sm" onClick={() => handleDownload(imageSrc, index)}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleDownload(imageSrc, index)}
+                  >
                     <Download className="mr-2 h-4 w-4" />
                     Download
                   </Button>
