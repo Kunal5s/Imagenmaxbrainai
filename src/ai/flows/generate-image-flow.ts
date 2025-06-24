@@ -31,27 +31,6 @@ export async function generateImage(input: GenerateImageInput): Promise<Generate
   return generateImageFlow(input);
 }
 
-// Helper to map UI ratios to API-supported ratios
-const getApiAspectRatio = (ratio: string | undefined) => {
-    switch (ratio) {
-        case '1:1':
-        case '5:4':
-            return 'SQUARE';
-        case '9:16':
-        case '3:4':
-        case '2:3':
-        case '4:5':
-            return 'PORTRAIT';
-        case '16:9':
-        case '4:3':
-        case '3:2':
-        case '2.39:1':
-        default:
-            return 'LANDSCAPE';
-    }
-}
-
-
 const generateImageFlow = ai.defineFlow(
   {
     name: 'generateImageFlow',
@@ -72,7 +51,8 @@ const generateImageFlow = ai.defineFlow(
       prompt: fullPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
-        aspectRatio: getApiAspectRatio(input.ratio),
+        // The aspectRatio parameter is not supported by the generativelanguage.googleapis.com endpoint
+        // and has been removed to ensure the service works correctly.
       },
     } as const;
 
@@ -83,7 +63,8 @@ const generateImageFlow = ai.defineFlow(
 
     const imageDataUris = results.map(result => {
         if (!result.media?.url) {
-            throw new Error('An image generation request failed to return an image.');
+            const errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred.';
+            throw new Error(`An image generation request failed to return an image. Reason: ${errorMessage}`);
         }
         return result.media.url;
     });
