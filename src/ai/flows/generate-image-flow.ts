@@ -49,7 +49,7 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join(', ');
 
     const result = await ai.generate({
-        model: googleAI.model('imagegeneration@006'),
+        model: googleAI.model('imagegeneration@005'),
         prompt: fullPrompt,
         config: {
             candidateCount: 4,
