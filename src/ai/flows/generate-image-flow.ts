@@ -46,16 +46,20 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `Colors: ${input.colors}`,
     ].filter(Boolean).join('. ');
 
-    const generationConfig = {
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: fullPrompt,
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-      },
-    } as const;
+    const generationRequest: any = {
+        model: 'googleai/gemini-2.0-flash-preview-image-generation',
+        prompt: fullPrompt,
+        config: {
+            responseModalities: ['TEXT', 'IMAGE'],
+        },
+    };
+
+    if (input.ratio) {
+        generationRequest.aspectRatio = input.ratio;
+    }
 
     // Create 4 parallel generation requests
-    const imagePromises = Array(4).fill(null).map(() => ai.generate(generationConfig));
+    const imagePromises = Array(4).fill(null).map(() => ai.generate(generationRequest));
 
     const results = await Promise.all(imagePromises);
 

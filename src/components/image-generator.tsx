@@ -29,22 +29,22 @@ const formSchema = z.object({
 });
 
 const options = {
-    styles: ['Photorealistic', 'Anime', 'Cartoon', 'Pixel Art', 'Watercolor', 'Impressionism', 'Surrealism', 'Minimalist', 'Fantasy', 'Sci-Fi'],
+    styles: ['3D Model', '8-bit', 'Abstract', 'Anime', 'Art Deco', 'Cartoon', 'Concept Art', 'Graffiti', 'Impressionism', 'Marker Art', 'Minimalist', 'Fantasy', 'Photorealistic', 'Pixel Art', 'Pop Art', 'Realistic', 'Sci-Fi', 'Sketch', 'Steampunk', 'Surrealism', 'Watercolor', 'Woodblock Print'],
     ratios: [
         { value: '1:1', label: '1:1 (Square)' },
-        { value: '16:9', label: '16:9 (Landscape)' },
+        { value: '16:9', label: '16:9 (Widescreen)' },
         { value: '9:16', label: '9:16 (Portrait)' },
         { value: '4:3', label: '4:3 (Standard)' },
-        { value: '3:4', label: '3:4 (Standard Portrait)' },
+        { value: '3:4', label: '3:4 (Portrait Standard)' },
         { value: '3:2', label: '3:2 (Classic Photo)' },
-        { value: '2:3', label: '2:3 (Classic Photo Portrait)' },
-        { value: '5:4', label: '5:4 (Photo)' },
-        { value: '4:5', label: '4:5 (Photo Portrait)' },
+        { value: '2:3', label: '2:3 (Portrait Photo)' },
+        { value: '5:4', label: '5:4 (Landscape Photo)' },
+        { value: '4:5', label: '4:5 (Portrait Photo)' },
         { value: '2.39:1', label: '2.39:1 (Cinematic)' },
     ],
-    moods: ['Happy', 'Somber', 'Energetic', 'Calm', 'Mysterious', 'Romantic', 'Whimsical', 'Dramatic', 'Nostalgic', 'Futuristic'],
-    lightings: ['Cinematic', 'Soft', 'Studio', 'Natural', 'High-key', 'Low-key', 'Backlight', 'Golden hour', 'Neon', 'Underwater'],
-    colors: ['Vibrant', 'Monochromatic', 'Pastel', 'Warm Tones', 'Cool Tones', 'Earthy Tones', 'Greyscale', 'Neon', 'Sepia', 'Technicolor']
+    moods: ['Calm', 'Cyberpunk', 'Dramatic', 'Dreamy', 'Energetic', 'Futuristic', 'Gothic', 'Happy', 'Kawaii', 'Mysterious', 'Nostalgic', 'Romantic', 'Somber', 'Utopian', 'Wasteland', 'Whimsical'],
+    lightings: ['Backlight', 'Bright', 'Cinematic', 'Ethereal', 'Golden Hour', 'High-key', 'Low-key', 'Misty', 'Natural', 'Neon', 'Studio', 'Sunset', 'Underwater'],
+    colors: ['Cool Tones', 'Earthy Tones', 'Greyscale', 'Indigo', 'Infrared', 'Monochromatic', 'Neon', 'Pastel', 'Sepia', 'Technicolor', 'Vibrant', 'Warm Tones']
 };
 
 export default function ImageGenerator() {
