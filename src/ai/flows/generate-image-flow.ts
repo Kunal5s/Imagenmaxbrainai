@@ -64,7 +64,6 @@ const generateImageFlow = ai.defineFlow(
         fullPrompt += '. Highly detailed, professional quality.';
     }
 
-    const imageDataUris: string[] = [];
     const generationPromises = Array(4).fill(null).map(() => 
         ai.generate({
             model: 'googleai/gemini-2.0-flash-preview-image-generation',
@@ -93,23 +92,40 @@ const generateImageFlow = ai.defineFlow(
         })
     );
 
-    const results = await Promise.all(generationPromises);
+    const results = await Promise.allSettled(generationPromises);
+    const imageDataUris: string[] = [];
+    const errorMessages: string[] = [];
 
     for (const result of results) {
-        const { media } = result;
-        if (!media?.url) {
-            const finishReason = result.candidates[0]?.finishReason;
-            let errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred during image generation.';
-            if (finishReason === 'SAFETY') {
-              errorMessage = 'The generated content was blocked due to safety settings. Please try a different prompt.';
-            } else if (finishReason === 'RECITATION') {
-              errorMessage = 'The prompt was blocked for containing recited content. Please rephrase your request.';
+        if (result.status === 'fulfilled') {
+            const generationResult = result.value;
+            const { media } = generationResult;
+            if (media?.url) {
+                imageDataUris.push(media.url);
+            } else {
+                const finishReason = generationResult.candidates[0]?.finishReason;
+                let errorMessage = generationResult.candidates[0]?.finishReasonMessage || 'An unknown error occurred during image generation.';
+                if (finishReason === 'SAFETY') {
+                  errorMessage = 'One or more images were blocked due to safety settings.';
+                } else if (finishReason === 'RECITATION') {
+                  errorMessage = 'One or more prompts were blocked for containing recited content.';
+                }
+                if (!errorMessages.includes(errorMessage)) {
+                    errorMessages.push(errorMessage);
+                }
             }
-            throw new Error(`Image generation failed: ${errorMessage}`);
+        } else {
+            const errorMessage = result.reason instanceof Error ? result.reason.message : String(result.reason);
+            if (!errorMessages.includes(errorMessage)) {
+                errorMessages.push(`Image generation failed: ${errorMessage}`);
+            }
         }
-        imageDataUris.push(media.url);
     }
     
+    if (imageDataUris.length === 0) {
+        throw new Error(errorMessages.join(' ') || 'Image generation failed. This might be due to a connection issue, an invalid API key, or a prompt that violates safety policies. Please try again.');
+    }
+
     return { imageDataUris };
   }
 );

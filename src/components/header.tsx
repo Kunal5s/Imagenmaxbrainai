@@ -33,7 +33,7 @@ export default function Header() {
           </h1>
         </Link>
         
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
               {link.label}
@@ -51,10 +51,12 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right">
               <SheetHeader>
-                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                <SheetTitle>
+                  Navigation Menu
+                </SheetTitle>
                 <SheetDescription className="sr-only">A list of links to navigate the website.</SheetDescription>
               </SheetHeader>
-              <nav className="flex flex-col gap-6 pt-8 text-lg font-medium">
+              <nav className="flex flex-col gap-6 pt-8 text-lg font-bold">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
