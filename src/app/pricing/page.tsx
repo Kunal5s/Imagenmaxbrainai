@@ -66,7 +66,7 @@ export default function PricingPage() {
         {plans.map((plan) => (
           <Card
             key={plan.name}
-            className={`flex flex-col h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:scale-105 ${plan.highlighted ? 'border-primary ring-2 ring-primary shadow-lg shadow-primary/20' : ''}`}
+            className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${plan.highlighted ? 'border-primary shadow-md' : ''}`}
           >
             <CardHeader>
               <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>

@@ -127,7 +127,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
       <section className="text-center py-20 lg:py-32 px-4 container mx-auto">
         <div className="opacity-0 animate-fadeInUp">
-          <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground mb-6 tracking-wide [text-shadow:0_0_15px_hsl(var(--primary)/0.3)]">
+          <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground mb-6">
             Imagen Max <span className="text-primary">BrainAi</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
@@ -138,7 +138,7 @@ export default function Home() {
           </p>
         </div>
         <div className="flex justify-center gap-4 opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
-          <Button size="lg" className="font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform" onClick={() => handleScrollTo('create')}>
+          <Button size="lg" className="font-bold hover:scale-105 transition-transform" onClick={() => handleScrollTo('create')}>
             Start Creating Now
           </Button>
         </div>
@@ -148,7 +148,7 @@ export default function Home() {
         <ImageGenerator />
       </div>
 
-      <section className="py-20 lg:py-24 bg-secondary/50">
+      <section className="py-20 lg:py-24 bg-slate-50">
         <div className="container mx-auto px-4 opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
           <div className="text-center max-w-3xl mx-auto">
              <h2 className="text-4xl font-headline font-bold text-foreground mb-4">Why Choose Imagen Max BrainAi?</h2>
@@ -158,8 +158,8 @@ export default function Home() {
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {features.map((feature, index) => (
-              <div key={index} className="flex flex-col items-center p-6 rounded-lg hover:bg-card/50 transition-colors group">
-                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 ring-2 ring-primary/20 group-hover:scale-110 transition-transform">
+              <div key={index} className="flex flex-col items-center p-6 rounded-lg transition-colors group">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-headline font-bold mb-2">{feature.title}</h3>
@@ -183,7 +183,7 @@ export default function Home() {
             {plans.map((plan) => (
               <Card
                 key={plan.name}
-                className={`flex flex-col h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:scale-105 ${plan.highlighted ? 'border-primary ring-2 ring-primary shadow-lg shadow-primary/20' : ''}`}
+                className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${plan.highlighted ? 'border-primary shadow-md' : ''}`}
               >
                 <CardHeader>
                   <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
@@ -214,7 +214,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 lg:py-24 bg-secondary/50">
+      <section className="py-20 lg:py-24 bg-slate-50">
         <div className="container mx-auto px-4 max-w-4xl opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
            <div className="text-center mb-12">
             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">
@@ -226,7 +226,7 @@ export default function Home() {
           </div>
           <Accordion type="single" collapsible className="w-full">
             {faqItems.map((item, index) => (
-              <AccordionItem value={`item-${index}`} key={index} className="border-border/50">
+              <AccordionItem value={`item-${index}`} key={index}>
                 <AccordionTrigger className="text-lg font-bold text-left hover:no-underline hover:text-primary transition-colors">{item.question}</AccordionTrigger>
                 <AccordionContent className="text-base text-muted-foreground">
                   {item.answer}

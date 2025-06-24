@@ -3,15 +3,15 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Orbitron, Roboto } from 'next/font/google';
+import { Lora, Inter } from 'next/font/google';
 
-const headlineFont = Orbitron({
+const headlineFont = Lora({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-headline',
 });
 
-const bodyFont = Roboto({
+const bodyFont = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
   variable: '--font-body',
@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className={`${headlineFont.variable} ${bodyFont.variable} font-body bg-background text-foreground antialiased`}>
         <Header />
         <main className="flex-1">

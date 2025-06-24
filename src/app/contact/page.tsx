@@ -20,15 +20,15 @@ export default function ContactPage() {
             <form className="space-y-4">
               <div>
                 <Label htmlFor="name">Your Name</Label>
-                <Input id="name" type="text" placeholder="Your Name" className="mt-1 bg-input" />
+                <Input id="name" type="text" placeholder="Your Name" className="mt-1" />
               </div>
                <div>
                 <Label htmlFor="email">Your Email</Label>
-                <Input id="email" type="email" placeholder="Your Email" className="mt-1 bg-input" />
+                <Input id="email" type="email" placeholder="Your Email" className="mt-1" />
               </div>
               <div>
                 <Label htmlFor="message">Your Message</Label>
-                <Textarea id="message" placeholder="Your Message" className="min-h-[150px] mt-1 bg-input" />
+                <Textarea id="message" placeholder="Your Message" className="min-h-[150px] mt-1" />
               </div>
               <Button type="submit" className="w-full">Send Message</Button>
             </form>
