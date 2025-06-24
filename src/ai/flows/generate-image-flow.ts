@@ -46,8 +46,8 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `with a ${input.colors} color palette`,
     ].filter(Boolean).join(', ');
     
-    // Using a powerful Imagen model available through Vertex AI to ensure high-quality results.
-    const imageModel = 'imagegeneration@005';
+    // Using a powerful and stable Imagen model available through Vertex AI to ensure high-quality results.
+    const imageModel = 'imagegeneration@002';
 
     const generationRequest: any = {
         model: imageModel,
