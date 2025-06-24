@@ -58,7 +58,7 @@ const generateImageFlow = ai.defineFlow(
         generationRequest.aspectRatio = input.ratio;
     }
 
-    // Generate 4 images sequentially to avoid rate-limiting issues.
+    // Generate 4 images sequentially to avoid rate-limiting issues and ensure stability.
     const imageDataUris: string[] = [];
     for (let i = 0; i < 4; i++) {
         const result = await ai.generate(generationRequest);
