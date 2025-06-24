@@ -147,81 +147,73 @@ export default function ImageGenerator() {
   return (
     <section id="create" className="container mx-auto py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <Card className="border shadow-lg">
+        <Card className="border shadow-lg overflow-hidden">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="prompt" className="text-lg font-bold">Enter your prompt</Label>
                 <p className="text-sm text-muted-foreground mb-2">Describe the image you want to create in detail.</p>
-                <div className="relative">
-                  <Textarea
-                    id="prompt"
-                    value={settings.prompt}
-                    onChange={(e) => handleSettingChange('prompt', e.target.value)}
-                    placeholder="e.g., A majestic lion wearing a crown, sitting on a throne in a cosmic library."
-                    className="min-h-[120px] pr-20"
-                    disabled={isLoading}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={handleSuggestPrompts}
-                    disabled={isSuggesting || isLoading}
-                    title="Suggest prompts"
-                  >
-                    {isSuggesting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-                  </Button>
-                </div>
+                <Textarea
+                  id="prompt"
+                  value={settings.prompt}
+                  onChange={(e) => handleSettingChange('prompt', e.target.value)}
+                  placeholder="e.g., A majestic lion wearing a crown, sitting on a throne in a cosmic library."
+                  className="min-h-[120px]"
+                  disabled={isLoading}
+                />
               </div>
 
               {promptSuggestions && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {promptSuggestions.map((suggestion, i) => (
-                    <Button key={i} variant="outline" size="sm" className="h-auto whitespace-normal" onClick={() => handleSettingChange('prompt', suggestion)}>
+                    <Button key={i} variant="outline" size="sm" className="h-auto text-xs whitespace-normal justify-start text-left" onClick={() => handleSettingChange('prompt', suggestion)}>
                       {suggestion}
                     </Button>
                   ))}
                 </div>
               )}
 
-              <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-base font-semibold">Advanced Options</AccordionTrigger>
-                  <AccordionContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+              <Accordion type="single" collapsible className="w-full" defaultValue="tools">
+                <AccordionItem value="tools" className="border-b-0">
+                  <AccordionTrigger className="text-base font-semibold hover:no-underline">
+                    <div className="flex items-center gap-2">
+                       <Paintbrush className="w-5 h-5" />
+                       <span>Creative Tools</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
                       <div className="space-y-2">
-                        <Label><Paintbrush className="inline-block mr-2 h-4 w-4" />Artistic Style</Label>
-                        <Select value={settings.style} onValueChange={(v) => handleSettingChange('style', v)}>
+                        <Label><Paintbrush className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Artistic Style</Label>
+                        <Select value={settings.style} onValueChange={(v) => handleSettingChange('style', v)} disabled={isLoading}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>{styles.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label><Ratio className="inline-block mr-2 h-4 w-4" />Aspect Ratio</Label>
-                        <Select value={settings.aspectRatio} onValueChange={(v) => handleSettingChange('aspectRatio', v)}>
+                        <Label><Ratio className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Aspect Ratio</Label>
+                        <Select value={settings.aspectRatio} onValueChange={(v) => handleSettingChange('aspectRatio', v)} disabled={isLoading}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>{aspectRatios.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                         <Label><Smile className="inline-block mr-2 h-4 w-4" />Mood</Label>
-                         <Select value={settings.mood} onValueChange={(v) => handleSettingChange('mood', v)}>
+                         <Label><Smile className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Mood</Label>
+                         <Select value={settings.mood} onValueChange={(v) => handleSettingChange('mood', v)} disabled={isLoading}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>{moods.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                          </Select>
                       </div>
                       <div className="space-y-2">
-                         <Label><Sun className="inline-block mr-2 h-4 w-4" />Lighting</Label>
-                         <Select value={settings.lighting} onValueChange={(v) => handleSettingChange('lighting', v)}>
+                         <Label><Sun className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Lighting</Label>
+                         <Select value={settings.lighting} onValueChange={(v) => handleSettingChange('lighting', v)} disabled={isLoading}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>{lightings.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                          </Select>
                       </div>
-                      <div className="space-y-2">
-                         <Label><Palette className="inline-block mr-2 h-4 w-4" />Color Palette</Label>
-                         <Select value={settings.colorPalette} onValueChange={(v) => handleSettingChange('colorPalette', v)}>
+                      <div className="space-y-2 md:col-span-2">
+                         <Label><Palette className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Color Palette</Label>
+                         <Select value={settings.colorPalette} onValueChange={(v) => handleSettingChange('colorPalette', v)} disabled={isLoading}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>{colorPalettes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                          </Select>
@@ -231,9 +223,27 @@ export default function ImageGenerator() {
                 </AccordionItem>
               </Accordion>
 
-              <Button type="submit" size="lg" className="w-full font-bold hover:scale-105 transition-transform" disabled={isLoading}>
-                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                  <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full sm:w-auto flex-grow font-bold hover:scale-105 transition-transform"
+                      disabled={isLoading}
+                  >
+                      {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
+                  </Button>
+                  <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                      onClick={handleSuggestPrompts}
+                      disabled={isSuggesting || isLoading}
+                  >
+                      {isSuggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      Suggest Prompts
+                  </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
