@@ -83,9 +83,10 @@ export default function ImageGenerator() {
       setPromptSuggestions(result.suggestions);
     } catch (error) {
       console.error('Failed to suggest prompts', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       toast({
         title: 'Suggestion Failed',
-        description: 'Could not generate prompt suggestions. Please try again.',
+        description: `Could not generate prompt suggestions. ${errorMessage}`,
         variant: 'destructive',
       });
     } finally {
@@ -108,9 +109,10 @@ export default function ImageGenerator() {
       setGeneratedImages(result.imageDataUris);
     } catch (error) {
       console.error('Failed to generate image', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       toast({
         title: 'Image Generation Failed',
-        description: 'Could not generate images. Please ensure your Gemini API key is valid and has billing enabled.',
+        description: `Could not generate images. ${errorMessage}`,
         variant: 'destructive',
       });
     } finally {
