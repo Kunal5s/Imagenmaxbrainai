@@ -48,16 +48,14 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `with a ${input.colors} color palette`,
     ].filter(Boolean).join(', ');
 
-    const generationRequest = {
+    const result = await ai.generate({
         model: googleAI.model('imagegeneration@006'),
         prompt: fullPrompt,
-        output: {
-            format: 'data_uri',
-            quantity: 4,
+        config: {
+            candidateCount: 4,
         },
-    };
+    });
 
-    const result = await ai.generate(generationRequest);
     const imageDataUris = result.candidates.map(candidate => {
         if (!candidate.media?.url) {
             const errorMessage = candidate.finishReasonMessage || 'An unknown error occurred.';
