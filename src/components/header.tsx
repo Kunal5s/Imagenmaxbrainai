@@ -20,6 +20,9 @@ export default function Header() {
           <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
             About
           </Link>
+          <Link href="/pricing" className="text-muted-foreground hover:text-primary transition-colors">
+            Pricing
+          </Link>
           <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
             Contact
           </Link>
