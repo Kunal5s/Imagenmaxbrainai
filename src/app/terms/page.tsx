@@ -1,11 +1,11 @@
 export default function TermsPage() {
   const contentSectionClasses = "space-y-4 text-muted-foreground text-lg leading-relaxed";
-  const headingClasses = "font-headline text-3xl font-bold text-foreground mt-12 mb-4";
+  const headingClasses = "font-headline text-3xl font-bold text-primary mt-12 mb-4";
   
   return (
-    <div className="container mx-auto py-12 px-4 max-w-4xl">
+    <div className="container mx-auto py-12 px-4 max-w-4xl opacity-0 animate-fadeInUp">
         <header className="mb-12 text-center">
-            <h1 className="text-4xl md:text-5xl font-headline font-bold">Terms of Service</h1>
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Terms of Service</h1>
             <p className="text-sm text-muted-foreground mt-2">Last updated: {new Date().toLocaleDateString()}</p>
         </header>
         <div className={contentSectionClasses}>

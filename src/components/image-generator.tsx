@@ -101,7 +101,7 @@ export default function ImageGenerator() {
             </p>
         </div>
         <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
-            <Card className="lg:col-span-2 bg-card border border-border">
+            <Card className="lg:col-span-2 bg-card/50 border-border/50">
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Generation Tools</CardTitle>
                 </CardHeader>
@@ -117,7 +117,7 @@ export default function ImageGenerator() {
                                         <FormControl>
                                             <Textarea
                                                 placeholder="e.g., 'A majestic lion wearing a crown, sitting on a throne in a cosmic library.'"
-                                                className="min-h-[120px]"
+                                                className="min-h-[120px] bg-input"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -131,7 +131,7 @@ export default function ImageGenerator() {
                                     <FormItem>
                                         <FormLabel className="font-bold">Artistic Style</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a style" /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger className="bg-input"><SelectValue placeholder="Select a style" /></SelectTrigger></FormControl>
                                             <SelectContent>{options.styles.map(style => <SelectItem key={style} value={style}>{style}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </FormItem>
@@ -140,7 +140,7 @@ export default function ImageGenerator() {
                                     <FormItem>
                                         <FormLabel className="font-bold">Aspect Ratio</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a ratio" /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger className="bg-input"><SelectValue placeholder="Select a ratio" /></SelectTrigger></FormControl>
                                             <SelectContent>{options.ratios.map(ratio => <SelectItem key={ratio.value} value={ratio.value}>{ratio.label}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </FormItem>
@@ -149,7 +149,7 @@ export default function ImageGenerator() {
                                     <FormItem>
                                         <FormLabel className="font-bold">Mood</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a mood" /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger className="bg-input"><SelectValue placeholder="Select a mood" /></SelectTrigger></FormControl>
                                             <SelectContent>{options.moods.map(mood => <SelectItem key={mood} value={mood}>{mood}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </FormItem>
@@ -158,7 +158,7 @@ export default function ImageGenerator() {
                                     <FormItem>
                                         <FormLabel className="font-bold">Lighting</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select lighting" /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger className="bg-input"><SelectValue placeholder="Select lighting" /></SelectTrigger></FormControl>
                                             <SelectContent>{options.lightings.map(light => <SelectItem key={light} value={light}>{light}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </FormItem>
@@ -167,14 +167,14 @@ export default function ImageGenerator() {
                                     <FormItem>
                                         <FormLabel className="font-bold">Color Palette</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select colors" /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger className="bg-input"><SelectValue placeholder="Select colors" /></SelectTrigger></FormControl>
                                             <SelectContent>{options.colors.map(color => <SelectItem key={color} value={color}>{color}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </FormItem>
                                 )} />
                             </div>
 
-                            <Button type="submit" size="lg" className="w-full font-bold" disabled={isLoading}>
+                            <Button type="submit" size="lg" className="w-full font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform" disabled={isLoading}>
                                 {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
                             </Button>
                         </form>
@@ -182,7 +182,7 @@ export default function ImageGenerator() {
                 </CardContent>
             </Card>
 
-            <div className="lg:col-span-3 flex flex-col items-center justify-center bg-secondary rounded-lg p-6 min-h-[400px] border">
+            <div className="lg:col-span-3 flex flex-col items-center justify-center bg-secondary/50 rounded-lg p-6 min-h-[400px] border border-border/50">
                 {isLoading && (
                     <div className="flex flex-col items-center gap-4 text-muted-foreground">
                         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -193,7 +193,7 @@ export default function ImageGenerator() {
                 {!isLoading && generatedImages && (
                     <div className="w-full grid grid-cols-2 gap-4" style={{ aspectRatio: `${aspectRatio}` }}>
                         {generatedImages.map((imageSrc, index) => (
-                             <div key={index} className="relative w-full h-full overflow-hidden rounded-lg group">
+                             <div key={index} className="relative w-full h-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp" style={{ animationDelay: `${index * 150}ms`}}>
                                 <Image src={imageSrc} alt={`Generated AI Image ${index + 1}`} fill className="object-cover" />
                                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button asChild variant="secondary" size="sm">

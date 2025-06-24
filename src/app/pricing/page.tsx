@@ -54,9 +54,9 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <div className="container mx-auto py-12 px-4 max-w-5xl">
+    <div className="container mx-auto py-12 px-4 max-w-5xl opacity-0 animate-fadeInUp">
       <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-4">Choose Your Perfect Plan</h1>
+        <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary mb-4">Choose Your Perfect Plan</h1>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
           Simple, transparent pricing for Imagen BrainAi. No hidden fees.
         </p>
@@ -66,10 +66,10 @@ export default function PricingPage() {
         {plans.map((plan) => (
           <Card
             key={plan.name}
-            className={`flex flex-col h-full ${plan.highlighted ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}
+            className={`flex flex-col h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:scale-105 ${plan.highlighted ? 'border-primary ring-2 ring-primary shadow-lg shadow-primary/20' : ''}`}
           >
             <CardHeader>
-              <CardTitle className="font-headline text-3xl">{plan.name}</CardTitle>
+              <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">{plan.price}</span>
                 <span className="text-muted-foreground">/ month</span>

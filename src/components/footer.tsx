@@ -5,7 +5,7 @@ import { BrainCircuit } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="py-8 px-4 md:px-8 border-t mt-12 bg-secondary">
+    <footer className="py-8 px-4 md:px-8 border-t border-border/50 mt-12 bg-secondary/20">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex flex-col gap-4">
@@ -35,7 +35,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t text-center text-muted-foreground text-sm">
+        <div className="mt-8 pt-8 border-t border-border/50 text-center text-muted-foreground text-sm">
           <p>&copy; {new Date().getFullYear()} Imagen Max BrainAi. All Rights Reserved.</p>
         </div>
       </div>

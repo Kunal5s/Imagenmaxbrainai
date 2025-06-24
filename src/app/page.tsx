@@ -124,28 +124,32 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
       <section className="text-center py-20 lg:py-32 px-4 container mx-auto">
-        <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground mb-6 tracking-wide">
-          Imagen Max BrainAi
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
-          Welcome to the future of digital artistry. Imagen Max BrainAi is a state-of-the-art platform that transforms your text prompts into breathtaking, high-quality images in seconds.
-        </p>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-          Our advanced AI understands a vast range of styles, moods, and compositions, giving you unparalleled control to bring your imagination to life. Whether you're a professional designer, a creative hobbyist, or just curious, our tools are designed for you.
-        </p>
-        <div className="flex justify-center gap-4">
-          <Button size="lg" className="font-bold" onClick={() => handleScrollTo('create')}>
+        <div className="opacity-0 animate-fadeInUp">
+          <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground mb-6 tracking-wide [text-shadow:0_0_15px_hsl(var(--primary)/0.3)]">
+            Imagen Max <span className="text-primary">BrainAi</span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
+            Welcome to the future of digital artistry. Imagen Max BrainAi is a state-of-the-art platform that transforms your text prompts into breathtaking, high-quality images in seconds.
+          </p>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Our advanced AI understands a vast range of styles, moods, and compositions, giving you unparalleled control to bring your imagination to life. Whether you're a professional designer, a creative hobbyist, or just curious, our tools are designed for you.
+          </p>
+        </div>
+        <div className="flex justify-center gap-4 opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
+          <Button size="lg" className="font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform" onClick={() => handleScrollTo('create')}>
             Start Creating Now
           </Button>
         </div>
       </section>
 
-      <ImageGenerator />
+      <div className="opacity-0 animate-fadeInUp" style={{animationDelay: '400ms'}}>
+        <ImageGenerator />
+      </div>
 
-      <section className="py-20 lg:py-24 bg-secondary">
-        <div className="container mx-auto px-4">
+      <section className="py-20 lg:py-24 bg-secondary/50">
+        <div className="container mx-auto px-4 opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
           <div className="text-center max-w-3xl mx-auto">
              <h2 className="text-4xl font-headline font-bold text-foreground mb-4">Why Choose Imagen Max BrainAi?</h2>
             <p className="text-lg text-muted-foreground mb-12">
@@ -154,8 +158,8 @@ export default function Home() {
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {features.map((feature, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
+              <div key={index} className="flex flex-col items-center p-6 rounded-lg hover:bg-card/50 transition-colors group">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 ring-2 ring-primary/20 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-headline font-bold mb-2">{feature.title}</h3>
@@ -167,7 +171,7 @@ export default function Home() {
       </section>
 
       <section className="py-20 lg:py-24">
-        <div className="container mx-auto px-4 max-w-5xl">
+        <div className="container mx-auto px-4 max-w-5xl opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
           <div className="text-center mb-12">
             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">Choose Your Perfect Plan</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -179,10 +183,10 @@ export default function Home() {
             {plans.map((plan) => (
               <Card
                 key={plan.name}
-                className={`flex flex-col h-full ${plan.highlighted ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}
+                className={`flex flex-col h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:scale-105 ${plan.highlighted ? 'border-primary ring-2 ring-primary shadow-lg shadow-primary/20' : ''}`}
               >
                 <CardHeader>
-                  <CardTitle className="font-headline text-3xl">{plan.name}</CardTitle>
+                  <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold">{plan.price}</span>
                     <span className="text-muted-foreground">/ month</span>
@@ -210,8 +214,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 lg:py-24 bg-secondary">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <section className="py-20 lg:py-24 bg-secondary/50">
+        <div className="container mx-auto px-4 max-w-4xl opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
            <div className="text-center mb-12">
             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">
               Frequently Asked Questions
@@ -222,8 +226,8 @@ export default function Home() {
           </div>
           <Accordion type="single" collapsible className="w-full">
             {faqItems.map((item, index) => (
-              <AccordionItem value={`item-${index}`} key={index}>
-                <AccordionTrigger className="text-lg font-bold text-left hover:no-underline">{item.question}</AccordionTrigger>
+              <AccordionItem value={`item-${index}`} key={index} className="border-border/50">
+                <AccordionTrigger className="text-lg font-bold text-left hover:no-underline hover:text-primary transition-colors">{item.question}</AccordionTrigger>
                 <AccordionContent className="text-base text-muted-foreground">
                   {item.answer}
                 </AccordionContent>

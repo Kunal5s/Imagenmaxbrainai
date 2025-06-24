@@ -6,9 +6,9 @@ import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function ContactPage() {
   return (
-    <div className="container mx-auto py-12 px-4 max-w-4xl">
+    <div className="container mx-auto py-12 px-4 max-w-4xl opacity-0 animate-fadeInUp">
       <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-4">Contact Us</h1>
+        <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary mb-4">Contact Us</h1>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
           Have questions, feedback, or need support? We'd love to hear from you.
         </p>
@@ -20,15 +20,15 @@ export default function ContactPage() {
             <form className="space-y-4">
               <div>
                 <Label htmlFor="name">Your Name</Label>
-                <Input id="name" type="text" placeholder="Your Name" className="mt-1 bg-background" />
+                <Input id="name" type="text" placeholder="Your Name" className="mt-1 bg-input" />
               </div>
                <div>
                 <Label htmlFor="email">Your Email</Label>
-                <Input id="email" type="email" placeholder="Your Email" className="mt-1 bg-background" />
+                <Input id="email" type="email" placeholder="Your Email" className="mt-1 bg-input" />
               </div>
               <div>
                 <Label htmlFor="message">Your Message</Label>
-                <Textarea id="message" placeholder="Your Message" className="min-h-[150px] mt-1 bg-background" />
+                <Textarea id="message" placeholder="Your Message" className="min-h-[150px] mt-1 bg-input" />
               </div>
               <Button type="submit" className="w-full">Send Message</Button>
             </form>
