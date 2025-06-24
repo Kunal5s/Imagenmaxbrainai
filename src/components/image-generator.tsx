@@ -144,13 +144,64 @@ export default function ImageGenerator() {
   };
 
   const handleDownload = (imageSrc: string, index: number) => {
-    const link = document.createElement('a');
-    link.href = imageSrc;
-    link.download = `imagenmax-ai-creation-${index + 1}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const image = new window.Image();
+    image.src = imageSrc;
+    image.crossOrigin = 'anonymous';
+
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        toast({ title: 'Download Error', description: 'Could not prepare image for download.', variant: 'destructive' });
+        return;
+      }
+
+      const ratioString = settings.aspectRatio;
+      const match = ratioString.match(/\(([^)]+)\)/);
+      
+      const targetAspectRatio = match ? eval(match[1].replace(':', '/')) : 1;
+
+      let sx, sy, sWidth, sHeight;
+      const originalWidth = image.naturalWidth;
+      const originalHeight = image.naturalHeight;
+      const originalAspectRatio = originalWidth / originalHeight;
+
+      if (originalAspectRatio > targetAspectRatio) {
+        sHeight = originalHeight;
+        sWidth = originalHeight * targetAspectRatio;
+        sx = (originalWidth - sWidth) / 2;
+        sy = 0;
+      } else {
+        sWidth = originalWidth;
+        sHeight = originalWidth / targetAspectRatio;
+        sx = 0;
+        sy = (originalHeight - sHeight) / 2;
+      }
+      
+      canvas.width = sWidth;
+      canvas.height = sHeight;
+
+      ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `imagenmax-ai-creation-${index + 1}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    image.onerror = () => {
+      toast({ title: 'Download Error', description: 'Could not load image data to process.', variant: 'destructive' });
+      const link = document.createElement('a');
+      link.href = imageSrc;
+      link.download = `imagenmax-ai-creation-${index + 1}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
   };
+
 
   return (
     <section id="create" className="container mx-auto py-12 px-4">
