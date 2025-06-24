@@ -8,7 +8,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
 import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
@@ -47,11 +46,11 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `with a ${input.colors} color palette`,
     ].filter(Boolean).join(', ');
     
-    // Explicitly reference the stable Imagen model from the Vertex AI service to ensure correct routing.
-    const imageModel = googleAI.model('imagegeneration@005');
-
     const generationRequest: any = {
-        model: imageModel,
+        // By specifying the provider and model name, we ensure Genkit routes this request
+        // through the Vertex AI configuration defined in `genkit.ts`. This is the
+        // most stable and reliable way to request this model.
+        model: 'googleai/imagegeneration@005',
         prompt: fullPrompt,
         // Request 4 images to be generated in a single batch call for efficiency.
         candidates: 4,
