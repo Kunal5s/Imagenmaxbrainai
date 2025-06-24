@@ -51,8 +51,8 @@ const generateImageFlow = ai.defineFlow(
       prompt: fullPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
-        // The aspectRatio parameter is not supported by the generativelanguage.googleapis.com endpoint
-        // and has been removed to ensure the service works correctly.
+        // Aspect ratio for the generated images, now supported by the Vertex AI backend.
+        aspectRatio: input.ratio,
       },
     } as const;
 
