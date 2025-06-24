@@ -72,7 +72,7 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <div className="container mx-auto py-12 px-4 max-w-6xl opacity-0 animate-fadeInUp">
+    <div className="container mx-auto py-16 md:py-24 px-4 max-w-6xl opacity-0 animate-fadeInUp">
       <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary mb-4">Choose Your Perfect Plan</h1>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">

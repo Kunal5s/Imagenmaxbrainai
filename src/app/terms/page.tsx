@@ -1,12 +1,27 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
+
 export default function TermsPage() {
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    setCurrentDate(new Date().toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }));
+  }, []);
+
   const contentSectionClasses = "space-y-4 text-muted-foreground text-lg leading-relaxed";
   const headingClasses = "font-headline text-3xl font-bold text-primary mt-12 mb-4";
   
   return (
-    <div className="container mx-auto py-12 px-4 max-w-4xl opacity-0 animate-fadeInUp">
+    <div className="container mx-auto py-16 md:py-24 px-4 max-w-4xl opacity-0 animate-fadeInUp">
         <header className="mb-12 text-center">
             <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Terms of Service</h1>
-            <p className="text-sm text-muted-foreground mt-2">Last updated: {new Date().toLocaleDateString()}</p>
+            {currentDate && <p className="text-sm text-muted-foreground mt-2">Last updated: {currentDate}</p>}
         </header>
         <div className={contentSectionClasses}>
             <p>Please read these Terms of Service carefully before using the Imagen Max BrainAi service.</p>

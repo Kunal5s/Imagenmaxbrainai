@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -5,7 +6,7 @@ import { BrainCircuit } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="py-8 px-4 md:px-8 border-t mt-12 bg-slate-50">
+    <footer className="py-16 border-t mt-24 bg-slate-50">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex flex-col gap-4">

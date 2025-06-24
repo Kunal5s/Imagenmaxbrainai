@@ -143,7 +143,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
-      <section className="text-center py-20 lg:py-32 px-4 container mx-auto">
+      <section className="text-center py-24 lg:py-32 px-4 container mx-auto">
         <div className="opacity-0 animate-fadeInUp">
           <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground mb-6">
             Imagen Max <span className="text-primary">BrainAi</span>
@@ -166,7 +166,7 @@ export default function Home() {
         <ImageGenerator />
       </div>
 
-      <section className="py-20 lg:py-24 bg-slate-50">
+      <section className="py-24 lg:py-32 bg-slate-50">
         <div className="container mx-auto px-4 opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
           <div className="text-center max-w-3xl mx-auto">
              <h2 className="text-4xl font-headline font-bold text-foreground mb-4">Why Choose Imagen Max BrainAi?</h2>
@@ -174,21 +174,25 @@ export default function Home() {
               Our platform is built to empower your creativity with speed, variety, and precision. We provide the tools you need to not just generate images, but to craft visual stories.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 text-center">
+          <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="flex flex-col items-center p-6 rounded-lg transition-colors group">
-                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-8 h-8" />
-                </div>
-                <h3 className="text-2xl font-headline font-bold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </div>
+              <Card key={index} className="text-center p-8 border hover:shadow-xl hover:border-border transition-all duration-300 transform hover:-translate-y-2 bg-card">
+                <CardHeader className="p-0 items-center">
+                  <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6 border-2 border-primary/20">
+                    <feature.icon className="w-8 h-8" />
+                  </div>
+                  <CardTitle className="font-headline text-2xl">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 pt-4">
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20 lg:py-24">
+      <section className="py-24 lg:py-32">
         <div className="container mx-auto px-4 max-w-6xl opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
           <div className="text-center mb-12">
             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">Choose Your Perfect Plan</h2>
@@ -234,7 +238,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 lg:py-24 bg-slate-50">
+      <section className="py-24 lg:py-32 bg-slate-50">
         <div className="container mx-auto px-4 max-w-4xl opacity-0 animate-fadeInUp" style={{animationDelay: '200ms'}}>
            <div className="text-center mb-12">
             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">

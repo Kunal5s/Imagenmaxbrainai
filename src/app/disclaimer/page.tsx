@@ -1,12 +1,27 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
+
 export default function DisclaimerPage() {
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    setCurrentDate(new Date().toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }));
+  }, []);
+
   const contentSectionClasses = "space-y-4 text-muted-foreground text-lg leading-relaxed";
   const headingClasses = "font-headline text-3xl font-bold text-primary mt-12 mb-4";
 
   return (
-    <div className="container mx-auto py-12 px-4 max-w-4xl opacity-0 animate-fadeInUp">
+    <div className="container mx-auto py-16 md:py-24 px-4 max-w-4xl opacity-0 animate-fadeInUp">
         <header className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Disclaimer</h1>
-          <p className="text-sm text-muted-foreground mt-2">Last updated: {new Date().toLocaleDateString()}</p>
+          {currentDate && <p className="text-sm text-muted-foreground mt-2">Last updated: {currentDate}</p>}
         </header>
         <div className={contentSectionClasses}>
             <p>The information provided by Imagen Max BrainAi (“we,” “us,” or “our”) on this website is for general informational purposes only. All information on the site is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information on the site.</p>
