@@ -32,14 +32,14 @@ const prompt = ai.definePrompt({
   name: 'suggestPromptsPrompt',
   input: {schema: SuggestPromptsInputSchema},
   output: {schema: SuggestPromptsOutputSchema},
-  prompt: `You are a creative assistant for an AI image generator called Imagen Max BrainAi.
-Your task is to take a user's simple idea and expand it into 3 diverse, detailed, and visually rich prompts.
-The prompts should be descriptive and imaginative to help the user generate stunning and unique images.
-Each suggestion should be a complete, self-contained prompt.
+  model: 'googleai/gemini-1.5-flash-latest',
+  prompt: `You are an expert creative assistant for an advanced AI image generator. Your task is to take a user's simple idea or keyword and transform it into 3 distinct, highly detailed, and visually inspiring prompts.
+
+Each prompt should be a complete paragraph, rich with descriptive language covering subjects, scenery, art style, mood, and lighting to help the user generate incredible images.
 
 User's idea: {{{idea}}}
 
-Provide your suggestions in the required output format.`,
+Based on the idea, generate 3 prompt suggestions.`,
 });
 
 const suggestPromptsFlow = ai.defineFlow(
