@@ -47,7 +47,7 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join(', ');
     
     const generationRequest: any = {
-        model: 'googleai/imagegeneration@005',
+        model: 'imagegeneration',
         prompt: fullPrompt,
         candidates: 4,
     };

@@ -3,6 +3,6 @@ import {googleAI} from '@genkit-ai/googleai';
 
 export const ai = genkit({
   plugins: [
-    googleAI(),
+    googleAI({apiService: 'vertex', location: 'us-central1'}),
   ],
 });
