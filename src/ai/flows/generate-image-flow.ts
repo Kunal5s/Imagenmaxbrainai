@@ -58,19 +58,17 @@ const generateImageFlow = ai.defineFlow(
         generationRequest.aspectRatio = input.ratio;
     }
 
-    // Create 4 parallel generation requests
-    const imagePromises = Array(4).fill(null).map(() => ai.generate(generationRequest));
-
-    const results = await Promise.all(imagePromises);
-
-    const imageDataUris = results.map(result => {
+    // Generate 4 images sequentially to avoid rate-limiting issues.
+    const imageDataUris: string[] = [];
+    for (let i = 0; i < 4; i++) {
+        const result = await ai.generate(generationRequest);
         if (!result.media?.url) {
             const errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred.';
             throw new Error(`An image generation request failed to return an image. Reason: ${errorMessage}`);
         }
-        return result.media.url;
-    });
-
+        imageDataUris.push(result.media.url);
+    }
+    
     return { imageDataUris };
   }
 );
