@@ -40,27 +40,26 @@ const generateImageFlow = ai.defineFlow(
   async (input) => {
     const fullPrompt = [
         input.prompt,
-        input.style && `Style: ${input.style}`,
-        input.mood && `Mood: ${input.mood}`,
-        input.lighting && `Lighting: ${input.lighting}`,
-        input.colors && `Colors: ${input.colors}`,
-    ].filter(Boolean).join('. ');
+        input.style && `in a ${input.style} style`,
+        input.mood && `with a ${input.mood} mood`,
+        input.lighting && `using ${input.lighting} lighting`,
+        input.colors && `with a ${input.colors} color palette`,
+    ].filter(Boolean).join(', ');
     
-    const imageModel = 'gemini-2.0-flash-preview-image-generation';
+    // Using a powerful Imagen model available through Vertex AI to ensure high-quality results.
+    const imageModel = 'googleai/imagegeneration@006';
 
     const generationRequest: any = {
         model: imageModel,
         prompt: fullPrompt,
-        config: {
-            responseModalities: ['TEXT', 'IMAGE'],
-        },
     };
 
     if (input.ratio) {
+        // Genkit normalizes aspect ratio formats for the underlying model.
         generationRequest.aspectRatio = input.ratio;
     }
 
-    // Generate 4 images sequentially to avoid rate-limiting issues and ensure stability.
+    // Generate 4 images sequentially to ensure stability and avoid rate-limiting.
     const imageDataUris: string[] = [];
     for (let i = 0; i < 4; i++) {
         const result = await ai.generate(generationRequest);
