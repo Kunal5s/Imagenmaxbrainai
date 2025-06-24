@@ -47,7 +47,7 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join('. ');
 
     const generationRequest: any = {
-        model: 'gemini-2.0-flash-preview-image-generation',
+        model: 'googleai/gemini-2.0-flash-preview-image-generation',
         prompt: fullPrompt,
         config: {
             responseModalities: ['TEXT', 'IMAGE'],
