@@ -10,8 +10,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <section className="text-center py-20 lg:py-32 px-4">
-        <h1 className="text-5xl md:text-7xl font-headline font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent mb-6 tracking-wide animate-pulse">
+      <section className="text-center py-20 lg:py-32 px-4 container mx-auto">
+        <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground mb-6 tracking-wide">
           Imagen Max BrainAi
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4">

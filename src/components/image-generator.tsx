@@ -93,7 +93,7 @@ export default function ImageGenerator() {
   return (
     <section id="create" className="container mx-auto py-12 px-4">
         <div className="text-center mb-12">
-            <h2 className="text-4xl font-headline font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent mb-4">
+            <h2 className="text-4xl font-headline font-bold text-foreground mb-4">
                 Create Your Vision
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -101,7 +101,7 @@ export default function ImageGenerator() {
             </p>
         </div>
         <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
-            <Card className="lg:col-span-2 bg-card shadow-lg border border-border/50">
+            <Card className="lg:col-span-2 bg-card border border-border">
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Generation Tools</CardTitle>
                 </CardHeader>
@@ -117,7 +117,7 @@ export default function ImageGenerator() {
                                         <FormControl>
                                             <Textarea
                                                 placeholder="e.g., 'A majestic lion wearing a crown, sitting on a throne in a cosmic library.'"
-                                                className="min-h-[120px] bg-background"
+                                                className="min-h-[120px]"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -182,7 +182,7 @@ export default function ImageGenerator() {
                 </CardContent>
             </Card>
 
-            <div className="lg:col-span-3 flex flex-col items-center justify-center bg-card shadow-lg rounded-lg p-6 min-h-[400px] border border-border/50">
+            <div className="lg:col-span-3 flex flex-col items-center justify-center bg-secondary rounded-lg p-6 min-h-[400px] border">
                 {isLoading && (
                     <div className="flex flex-col items-center gap-4 text-muted-foreground">
                         <Loader2 className="h-16 w-16 animate-spin text-primary" />
