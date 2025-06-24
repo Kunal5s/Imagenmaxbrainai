@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -6,15 +5,15 @@ import { BrainCircuit } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="py-16 border-t mt-24 bg-slate-50">
+    <footer className="py-12 border-t mt-16 bg-slate-50">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col items-center md:items-start gap-4">
             <Link href="/" className="flex items-center gap-2">
                 <BrainCircuit className="w-8 h-8 text-primary" />
                 <h1 className="text-xl font-headline font-bold text-foreground">Imagen Max BrainAi</h1>
             </Link>
-            <p className="text-muted-foreground text-sm max-w-xs">
+            <p className="text-muted-foreground text-sm max-w-xs text-center md:text-left">
               The future of AI-powered image generation, designed for creators, developers, and innovators.
             </p>
           </div>
@@ -36,7 +35,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t text-center text-muted-foreground text-sm">
+        <div className="mt-12 pt-8 border-t text-center text-muted-foreground text-sm">
           <p>&copy; {new Date().getFullYear()} Imagen Max BrainAi. All Rights Reserved.</p>
         </div>
       </div>
