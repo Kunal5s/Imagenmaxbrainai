@@ -8,6 +8,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
@@ -41,30 +42,29 @@ const generateImageFlow = ai.defineFlow(
     const fullPrompt = [
         input.prompt,
         input.style && `in a ${input.style} style`,
+        input.ratio && `with a ${input.ratio} aspect ratio`,
         input.mood && `with a ${input.mood} mood`,
         input.lighting && `using ${input.lighting} lighting`,
         input.colors && `with a ${input.colors} color palette`,
     ].filter(Boolean).join(', ');
-    
-    // We will generate 4 images by calling the model 4 times in parallel.
-    const imagePromises = Array(4).fill(null).map(async () => {
-      const {media} = await ai.generate({
-        model: 'googleai/gemini-2.0-flash-preview-image-generation',
+
+    const generationRequest = {
+        model: googleAI.model('imagegeneration@006'),
         prompt: fullPrompt,
-        config: {
-          responseModalities: ['TEXT', 'IMAGE'],
-          // Aspect ratio is not directly supported by this model in this way.
-          // The model will determine the best aspect ratio based on the prompt.
+        output: {
+            format: 'data_uri',
+            quantity: 4,
         },
-      });
+    };
 
-      if (!media?.url) {
-        throw new Error('An image generation request failed to return an image.');
-      }
-      return media.url;
+    const result = await ai.generate(generationRequest);
+    const imageDataUris = result.candidates.map(candidate => {
+        if (!candidate.media?.url) {
+            const errorMessage = candidate.finishReasonMessage || 'An unknown error occurred.';
+            throw new Error(`Image generation failed: ${errorMessage}`);
+        }
+        return candidate.media.url;
     });
-
-    const imageDataUris = await Promise.all(imagePromises);
     
     return { imageDataUris };
   }
