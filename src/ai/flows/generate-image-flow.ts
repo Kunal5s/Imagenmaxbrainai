@@ -7,7 +7,7 @@
  * - GenerateImageOutput - The return type for the generateImage function.
  */
 
-import {ai, googleVertex} from '@/ai/genkit';
+import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
@@ -46,7 +46,7 @@ const generateImageFlow = ai.defineFlow(
         input.colors && `Colors: ${input.colors}`,
     ].filter(Boolean).join('. ');
 
-    const imageModel = googleVertex.model('gemini-2.0-flash-preview-image-generation');
+    const imageModel = ai.model('googleai/gemini-2.0-flash-preview-image-generation');
 
     const generationRequest: any = {
         model: imageModel,
