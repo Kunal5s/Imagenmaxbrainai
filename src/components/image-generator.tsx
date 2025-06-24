@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush, Diamond } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,8 @@ const aspectRatios = ["Square (1:1)", "Portrait (4:5)", "Tall Portrait (9:16)", 
 const moods = ["Cyberpunk", "Dreamy", "Gothic", "Kawaii", "Steampunk", "Wasteland", "Whimsical", "Melancholic", "Nostalgic", "Serene", "Tense", "Utopian", "Dystopian", "Mysterious", "Energetic"];
 const lightings = ["Bright", "Neon", "Misty", "Ethereal", "Sunset", "Golden Hour", "Blue Hour", "Volumetric", "Soft", "Hard", "Rembrandt", "Backlight"];
 const colorPalettes = ["Default", "Cool Tones", "Warm Tones", "Pastel Dreams", "Indigo Night", "Infrared Vision", "Monochromatic", "Earthy Tones", "Vibrant Neon", "Vintage Sepia", "Synthwave"];
+const qualities = ["Standard (1080p)", "4K Quality"];
+
 
 interface GenerationSettings {
   prompt: string;
@@ -30,6 +32,7 @@ interface GenerationSettings {
   mood: string;
   lighting: string;
   colorPalette: string;
+  quality: string;
 }
 
 const defaultSettings: GenerationSettings = {
@@ -39,6 +42,7 @@ const defaultSettings: GenerationSettings = {
   mood: 'Mysterious',
   lighting: 'Cinematic',
   colorPalette: 'Default',
+  quality: 'Standard (1080p)',
 };
 
 const getAspectRatioForCss = (ratioString: string | undefined): string => {
@@ -119,6 +123,7 @@ export default function ImageGenerator() {
         mood: settings.mood,
         lighting: settings.lighting,
         colorPalette: settings.colorPalette === 'Default' ? undefined : settings.colorPalette,
+        quality: settings.quality,
       };
       const result = await generateImage(input);
       setGeneratedImages(result.imageDataUris);
@@ -221,11 +226,18 @@ export default function ImageGenerator() {
                            <SelectContent>{lightings.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                          </Select>
                       </div>
-                      <div className="space-y-2 md:col-span-2">
+                      <div className="space-y-2">
                          <Label><Palette className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Color Palette</Label>
                          <Select value={settings.colorPalette} onValueChange={(v) => handleSettingChange('colorPalette', v)} disabled={isLoading}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
                            <SelectContent>{colorPalettes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                         </Select>
+                      </div>
+                      <div className="space-y-2">
+                         <Label><Diamond className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Quality</Label>
+                         <Select value={settings.quality} onValueChange={(v) => handleSettingChange('quality', v)} disabled={isLoading}>
+                           <SelectTrigger><SelectValue /></SelectTrigger>
+                           <SelectContent>{qualities.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                          </Select>
                       </div>
                     </div>
@@ -284,6 +296,7 @@ export default function ImageGenerator() {
                   src={imageSrc}
                   alt={`Generated AI Image ${index + 1}`}
                   fill
+                  sizes="(max-width: 640px) 100vw, 50vw"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

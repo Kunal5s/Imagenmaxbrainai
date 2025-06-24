@@ -18,6 +18,7 @@ const GenerateImageInputSchema = z.object({
   mood: z.string().optional().describe('The emotional mood of the image.'),
   lighting: z.string().optional().describe('The lighting style of the image.'),
   colorPalette: z.string().optional().describe('A predefined color palette for the image.'),
+  quality: z.string().optional().describe('The desired image quality.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -57,7 +58,11 @@ const generateImageFlow = ai.defineFlow(
       fullPrompt += `, with a ${input.colorPalette} color palette`;
     }
 
-    fullPrompt += '. Highly detailed, 8k, professional quality.'
+    if (input.quality === '4K Quality') {
+        fullPrompt += ', 4K, ultra-high resolution, photorealistic, ultra-detailed, professional photography.';
+    } else {
+        fullPrompt += '. Highly detailed, professional quality.';
+    }
 
     const imageDataUris: string[] = [];
     const generationPromises = Array(4).fill(null).map(() => 
@@ -97,6 +102,8 @@ const generateImageFlow = ai.defineFlow(
             let errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred during image generation.';
             if (finishReason === 'SAFETY') {
               errorMessage = 'The generated content was blocked due to safety settings. Please try a different prompt.';
+            } else if (finishReason === 'RECITATION') {
+              errorMessage = 'The prompt was blocked for containing recited content. Please rephrase your request.';
             }
             throw new Error(`Image generation failed: ${errorMessage}`);
         }

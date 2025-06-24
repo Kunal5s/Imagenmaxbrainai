@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
@@ -9,8 +10,8 @@ const plans = [
     price: '$0',
     description: 'For starters and hobbyists.',
     features: [
-      '10 credits per month (10 generations)',
-      'Standard speed & quality (1080p)',
+      '10 generations per day',
+      'Standard Quality (1080p)',
       'Access to core models',
       'Personal use license',
     ],
@@ -23,9 +24,9 @@ const plans = [
     price: '$25',
     description: 'For professionals and creators.',
     features: [
-      '1,000 credits per month (~50 generations)',
+      '1,000 generations per month',
       'Fast generation speed',
-      'Premium quality (up to 8K)',
+      '4K Ultra-High Quality',
       'Access to all AI models',
       'Commercial use license',
       'Priority support',
@@ -39,9 +40,9 @@ const plans = [
     price: '$50',
     description: 'For power users and teams.',
     features: [
-      '3,000 credits per month (~200 generations)',
+      '3,000 generations per month',
       'Lightning-fast speed',
-      'Premium quality (up to 8K)',
+      '4K Ultra-High Quality',
       'API access (coming soon)',
       'Team collaboration features',
       'Dedicated support',
