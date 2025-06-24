@@ -8,6 +8,7 @@ const plans = [
   {
     name: 'Free',
     price: '$0',
+    priceSuffix: '',
     description: 'For starters and hobbyists.',
     features: [
       '10 generations per day',
@@ -21,10 +22,11 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: '$25',
+    price: '$50',
+    priceSuffix: '/ month',
     description: 'For professionals and creators.',
     features: [
-      '1,000 generations per month',
+      '3,000 credits per month',
       'Fast generation speed',
       '4K Ultra-High Quality',
       'Access to all AI models',
@@ -37,10 +39,11 @@ const plans = [
   },
   {
     name: 'Mega',
-    price: '$50',
+    price: '$100',
+    priceSuffix: '/ month',
     description: 'For power users and teams.',
     features: [
-      '3,000 generations per month',
+      '10,000 credits per month',
       'Lightning-fast speed',
       '4K Ultra-High Quality',
       'API access (coming soon)',
@@ -51,11 +54,25 @@ const plans = [
     buttonLink: '#',
     highlighted: false,
   },
+  {
+    name: 'Booster Pack',
+    price: '$20',
+    priceSuffix: 'one-time',
+    description: 'Add-on credit top-up.',
+    features: [
+      '1,000 credits',
+      'Immediately fast generation',
+      'Credits never expire',
+    ],
+    buttonText: 'Buy Credits',
+    buttonLink: '#',
+    highlighted: false,
+  },
 ];
 
 export default function PricingPage() {
   return (
-    <div className="container mx-auto py-12 px-4 max-w-5xl opacity-0 animate-fadeInUp">
+    <div className="container mx-auto py-12 px-4 max-w-6xl opacity-0 animate-fadeInUp">
       <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary mb-4">Choose Your Perfect Plan</h1>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -63,7 +80,7 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
         {plans.map((plan) => (
           <Card
             key={plan.name}
@@ -73,7 +90,9 @@ export default function PricingPage() {
               <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground">/ month</span>
+                {plan.priceSuffix && (
+                    <span className="text-muted-foreground">{plan.priceSuffix}</span>
+                )}
               </div>
               <CardDescription>{plan.description}</CardDescription>
             </CardHeader>
