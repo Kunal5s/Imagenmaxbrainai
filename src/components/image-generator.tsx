@@ -22,20 +22,6 @@ const moods = ["Cyberpunk", "Dreamy", "Gothic", "Kawaii", "Steampunk", "Wastelan
 const lightings = ["Bright", "Neon", "Misty", "Ethereal", "Sunset", "Golden Hour", "Blue Hour", "Volumetric", "Soft", "Hard", "Rembrandt", "Backlight"];
 const colorPalettes = ["Default", "Cool Tones", "Warm Tones", "Pastel Dreams", "Indigo Night", "Infrared Vision", "Monochromatic", "Earthy Tones", "Vibrant Neon", "Vintage Sepia", "Synthwave"];
 
-const aspectRatioClasses: { [key: string]: string } = {
-    'Square (1:1)': 'aspect-square',
-    'Portrait (4:5)': 'aspect-[4/5]',
-    'Tall Portrait (9:16)': 'aspect-[9/16]',
-    'Classic Portrait (2:3)': 'aspect-[2/3]',
-    'Landscape (5:4)': 'aspect-[5/4]',
-    'Widescreen (16:9)': 'aspect-[16/9]',
-    'Classic Landscape (3:2)': 'aspect-[3/2]',
-    'Cinematic (2.39:1)': 'aspect-[2.39/1]',
-    'Ultra Wide (3:1)': 'aspect-[3/1]',
-    'Banner (4:1)': 'aspect-[4/1]',
-};
-
-
 interface GenerationSettings {
   prompt: string;
   style: string;
@@ -260,7 +246,7 @@ export default function ImageGenerator() {
         {!isLoading && generatedImages && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {generatedImages.map((imageSrc, index) => (
-              <div key={index} className={cn("relative w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg", aspectRatioClasses[settings.aspectRatio] || 'aspect-square')} style={{ animationDelay: `${index * 150}ms` }}>
+              <div key={index} className={cn("relative w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg aspect-square")} style={{ animationDelay: `${index * 150}ms` }}>
                 <Image src={imageSrc} alt={`Generated AI Image ${index + 1}`} fill className="object-cover" />
                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Button variant="secondary" size="sm" onClick={() => handleDownload(imageSrc, index)}>
