@@ -2,6 +2,69 @@
 
 import { Button } from '@/components/ui/button';
 import ImageGenerator from '@/components/image-generator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Sparkles, Palette, Layers, Zap } from 'lucide-react';
+
+const faqItems = [
+    {
+        question: "What is Imagen Max BrainAi?",
+        answer: "Imagen Max BrainAi is an advanced AI-powered platform that transforms your written text descriptions into stunning, unique, high-quality images. It's a tool for creators, designers, marketers, and anyone with an imagination."
+    },
+    {
+        question: "How does the image generation process work?",
+        answer: "Simply type a detailed description (a 'prompt') of the image you envision. Then, use our powerful tools to select an artistic style, aspect ratio, mood, lighting, and color palette. Click 'Generate', and our AI will produce four distinct image variations based on your input."
+    },
+    {
+        question: "Is this service free to use?",
+        answer: "Currently, Imagen Max BrainAi offers a generous free tier for all users to explore the core functionalities. We believe in making creativity accessible. In the future, we may introduce premium plans for advanced features and higher usage."
+    },
+    {
+        question: "Who owns the images I create?",
+        answer: "You do. As per our Terms of Service, you retain full ownership rights to the images you generate using your own prompts. You are free to use them for personal or commercial purposes."
+    },
+    {
+        question: "What makes Imagen Max BrainAi different from other AI generators?",
+        answer: "Our key differentiator is the combination of batch generation and deep customization. We generate four image options at once to give you more creative choice, and our detailed controls for mood, lighting, and color allow for unparalleled artistic direction."
+    },
+    {
+        question: "Why do I get four images for every prompt?",
+        answer: "AI interpretation can be nuanced. By providing four variations, we increase the probability that you will get an image that perfectly matches your vision on the first try. This saves you time and provides diverse creative avenues to explore."
+    },
+    {
+        question: "Can I control the dimensions of the generated images?",
+        answer: "Absolutely. We provide ten different aspect ratios, ranging from square (1:1) and portrait (9:16) to cinematic widescreen (2.39:1). This ensures your creations are perfectly sized for social media, blogs, presentations, or print."
+    },
+    {
+        question: "What are some tips for getting the best results?",
+        answer: "The key is a descriptive prompt. Instead of 'a cat,' try 'a fluffy, majestic Persian cat with bright green eyes, sleeping on a velvet cushion in a sunlit library.' The more detail you provide, the more accurately our AI can bring your idea to life."
+    },
+    {
+        question: "Is my data and are my prompts kept private?",
+        answer: "We take your privacy very seriously. Your prompts are processed to generate images and to improve our service, but they are handled securely. For complete details, please read our Privacy Policy."
+    },
+    {
+        question: "I have a question or need help. How can I get support?",
+        answer: "We're here to assist you! Please navigate to our 'Contact Us' page and send us a message. Our support team will get back to you as soon as possible."
+    }
+];
+
+const features = [
+  {
+    icon: Zap,
+    title: "Instant Creativity",
+    description: "Go from a simple idea to four stunning visual concepts in seconds. Our high-speed generation process means less waiting and more creating."
+  },
+  {
+    icon: Layers,
+    title: "Quad-Image Generation",
+    description: "Why settle for one? Get four unique interpretations of your prompt simultaneously. Compare, combine, or simply choose the best fit for your needs."
+  },
+  {
+    icon: Palette,
+    title: "Deep Customization",
+    description: "Become the art director. Fine-tune every aspect of your creation, from the overall artistic style and mood to the specific lighting and color palette."
+  }
+];
 
 export default function Home() {
   const handleScrollTo = (id: string) => {
@@ -28,6 +91,51 @@ export default function Home() {
       </section>
 
       <ImageGenerator />
+
+      <section className="py-20 lg:py-24 bg-secondary">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto">
+             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">Why Choose Imagen Max BrainAi?</h2>
+            <p className="text-lg text-muted-foreground mb-12">
+              Our platform is built to empower your creativity with speed, variety, and precision. We provide the tools you need to not just generate images, but to craft visual stories.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            {features.map((feature, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
+                  <feature.icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-headline font-bold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 lg:py-24">
+        <div className="container mx-auto px-4 max-w-4xl">
+           <div className="text-center mb-12">
+            <h2 className="text-4xl font-headline font-bold text-foreground mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Have questions? We've got answers. Here are some of the most common queries we receive about our platform.
+            </p>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqItems.map((item, index) => (
+              <AccordionItem value={`item-${index}`} key={index}>
+                <AccordionTrigger className="text-lg font-bold text-left hover:no-underline">{item.question}</AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  {item.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
     </div>
   );
 }
