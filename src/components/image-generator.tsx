@@ -42,10 +42,6 @@ export default function ImageGenerator() {
       console.error('Failed to generate image', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       
-      if (errorMessage.toLowerCase().includes('api key')) {
-        setApiKeyError(true);
-      }
-      
       toast({
         title: 'Image Generation Failed',
         description: `Could not generate images. ${errorMessage}`,
@@ -67,18 +63,6 @@ export default function ImageGenerator() {
 
   return (
     <section id="create" className="container mx-auto py-12 px-4">
-        {apiKeyError && (
-          <Alert variant="destructive" className="mb-8 animate-fadeInUp">
-            <Terminal className="h-4 w-4" />
-            <AlertTitle className="font-bold text-lg">API Key Configuration Required</AlertTitle>
-            <AlertDescription className="mt-2 space-y-2">
-              <p>The image generator has failed. It seems your Google AI API Key is missing or invalid.</p>
-              <p>To fix this, please create a file named <strong>.env</strong> in your project's main directory and add the following line, replacing "YOUR_API_KEY_HERE" with your actual key:</p>
-              <pre className="mt-2 p-3 bg-slate-950 text-white rounded-md text-sm font-mono"><code>GOOGLE_API_KEY="YOUR_API_KEY_HERE"</code></pre>
-              <p>You can get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline font-medium">Google AI Studio</a>. After adding the key, please restart the application for the changes to take effect.</p>
-            </AlertDescription>
-          </Alert>
-        )}
         <div className="max-w-2xl mx-auto">
             <Card className="border">
                 <CardContent className="p-6">
