@@ -110,7 +110,7 @@ export default function ImageGenerator() {
       console.error('Failed to generate image', error);
       toast({
         title: 'Image Generation Failed',
-        description: 'There was an error while generating the images. Please try again.',
+        description: 'Could not generate images. Please ensure your Gemini API key is valid and has billing enabled.',
         variant: 'destructive',
       });
     } finally {
