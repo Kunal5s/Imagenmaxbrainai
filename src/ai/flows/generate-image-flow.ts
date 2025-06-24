@@ -8,7 +8,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
@@ -48,7 +47,7 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join('. ');
 
     const generationRequest: any = {
-        model: googleAI.model('gemini-2.0-flash-preview-image-generation'),
+        model: 'googleai/gemini-2.0-flash-preview-image-generation',
         prompt: fullPrompt,
         config: {
             responseModalities: ['TEXT', 'IMAGE'],
