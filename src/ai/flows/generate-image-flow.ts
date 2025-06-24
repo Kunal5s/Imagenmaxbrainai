@@ -51,8 +51,6 @@ const generateImageFlow = ai.defineFlow(
       prompt: fullPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
-        // Aspect ratio for the generated images, now supported by the Vertex AI backend.
-        aspectRatio: input.ratio,
       },
     } as const;
 
