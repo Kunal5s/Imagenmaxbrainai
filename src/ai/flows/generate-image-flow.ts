@@ -47,11 +47,13 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join(', ');
     
     // Using a powerful Imagen model available through Vertex AI to ensure high-quality results.
-    const imageModel = 'googleai/imagegeneration@006';
+    const imageModel = 'imagegeneration@006';
 
     const generationRequest: any = {
         model: imageModel,
         prompt: fullPrompt,
+        // Request 4 images to be generated in a single batch call for efficiency.
+        candidates: 4,
     };
 
     if (input.ratio) {
@@ -59,16 +61,14 @@ const generateImageFlow = ai.defineFlow(
         generationRequest.aspectRatio = input.ratio;
     }
 
-    // Generate 4 images sequentially to ensure stability and avoid rate-limiting.
-    const imageDataUris: string[] = [];
-    for (let i = 0; i < 4; i++) {
-        const result = await ai.generate(generationRequest);
-        if (!result.media?.url) {
-            const errorMessage = result.candidates[0]?.finishReasonMessage || 'An unknown error occurred.';
+    const result = await ai.generate(generationRequest);
+    const imageDataUris = result.candidates.map(candidate => {
+        if (!candidate.media?.url) {
+            const errorMessage = candidate.finishReasonMessage || 'An unknown error occurred.';
             throw new Error(`An image generation request failed to return an image. Reason: ${errorMessage}`);
         }
-        imageDataUris.push(result.media.url);
-    }
+        return candidate.media.url;
+    });
     
     return { imageDataUris };
   }
