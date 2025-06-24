@@ -3,7 +3,9 @@
 import { Button } from '@/components/ui/button';
 import ImageGenerator from '@/components/image-generator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Sparkles, Palette, Layers, Zap } from 'lucide-react';
+import { Sparkles, Palette, Layers, Zap, Check } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
 const faqItems = [
     {
@@ -66,6 +68,56 @@ const features = [
   }
 ];
 
+const plans = [
+  {
+    name: 'Free',
+    price: '$0',
+    description: 'For starters and hobbyists.',
+    features: [
+      '10 credits per month (10 generations)',
+      'Standard speed & quality (1080p)',
+      'Access to core models',
+      'Personal use license',
+    ],
+    buttonText: 'Start Generating',
+    buttonLink: '/#create',
+    highlighted: false,
+  },
+  {
+    name: 'Pro',
+    price: '$25',
+    description: 'For professionals and creators.',
+    features: [
+      '1,000 credits per month (~50 generations)',
+      'Fast generation speed',
+      'Premium quality (up to 8K)',
+      'Access to all AI models',
+      'Commercial use license',
+      'Priority support',
+    ],
+    buttonText: 'Upgrade to Pro',
+    buttonLink: '#',
+    highlighted: true,
+  },
+  {
+    name: 'Mega',
+    price: '$50',
+    description: 'For power users and teams.',
+    features: [
+      '3,000 credits per month (~200 generations)',
+      'Lightning-fast speed',
+      'Premium quality (up to 8K)',
+      'API access (coming soon)',
+      'Team collaboration features',
+      'Dedicated support',
+    ],
+    buttonText: 'Upgrade to Mega',
+    buttonLink: '#',
+    highlighted: false,
+  },
+];
+
+
 export default function Home() {
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -115,6 +167,50 @@ export default function Home() {
       </section>
 
       <section className="py-20 lg:py-24">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-headline font-bold text-foreground mb-4">Choose Your Perfect Plan</h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Simple, transparent pricing for Imagen BrainAi. No hidden fees.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            {plans.map((plan) => (
+              <Card
+                key={plan.name}
+                className={`flex flex-col h-full ${plan.highlighted ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}
+              >
+                <CardHeader>
+                  <CardTitle className="font-headline text-3xl">{plan.name}</CardTitle>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold">{plan.price}</span>
+                    <span className="text-muted-foreground">/ month</span>
+                  </div>
+                  <CardDescription>{plan.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <ul className="space-y-3">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start">
+                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-1" />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full" variant={plan.highlighted ? 'default' : 'outline'}>
+                    <Link href={plan.buttonLink}>{plan.buttonText}</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 lg:py-24 bg-secondary">
         <div className="container mx-auto px-4 max-w-4xl">
            <div className="text-center mb-12">
             <h2 className="text-4xl font-headline font-bold text-foreground mb-4">
