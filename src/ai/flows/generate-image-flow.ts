@@ -13,11 +13,6 @@ import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
   prompt: z.string().describe('The main text prompt for the image.'),
-  style: z.string().optional().describe('The artistic style of the image.'),
-  ratio: z.string().optional().describe('The aspect ratio of the image.'),
-  mood: z.string().optional().describe('The mood or atmosphere of the image.'),
-  lighting: z.string().optional().describe('The lighting conditions of the image.'),
-  colors: z.string().optional().describe('The color palette of the image.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -39,14 +34,7 @@ const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async (input) => {
-    const fullPrompt = [
-        input.prompt,
-        input.style && `in a ${input.style} style`,
-        input.ratio && `with a ${input.ratio} aspect ratio`,
-        input.mood && `with a ${input.mood} mood`,
-        input.lighting && `using ${input.lighting} lighting`,
-        input.colors && `with a ${input.colors} color palette`,
-    ].filter(Boolean).join(', ');
+    const fullPrompt = input.prompt;
 
     const imageDataUris: string[] = [];
 
