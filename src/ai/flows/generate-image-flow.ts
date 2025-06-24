@@ -8,6 +8,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
@@ -47,7 +48,7 @@ const generateImageFlow = ai.defineFlow(
     ].filter(Boolean).join(', ');
     
     const generationRequest: any = {
-        model: 'googleai/imagegeneration@006',
+        model: googleAI.model('imagegeneration@005'),
         prompt: fullPrompt,
         candidates: 4,
     };
