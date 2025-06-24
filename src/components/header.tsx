@@ -5,6 +5,9 @@ import { BrainCircuit, Menu } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Button } from '@/components/ui/button';
@@ -47,7 +50,11 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
-              <nav className="flex flex-col gap-6 pt-12 text-lg font-medium">
+              <SheetHeader>
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                <SheetDescription className="sr-only">A list of links to navigate the website.</SheetDescription>
+              </SheetHeader>
+              <nav className="flex flex-col gap-6 pt-8 text-lg font-medium">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
