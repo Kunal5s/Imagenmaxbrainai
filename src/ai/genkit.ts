@@ -5,7 +5,7 @@ export const ai = genkit({
   plugins: [
     googleAI({
       apiProvider: 'vertex',
-      location: 'us-east4',
+      location: 'us-central1',
     }),
   ],
 });
