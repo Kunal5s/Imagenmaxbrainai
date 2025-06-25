@@ -3,18 +3,27 @@ import {googleAI} from '@genkit-ai/googleai';
 
 // This configuration tells Genkit to use the Google AI provider.
 //
-// FOR THE LIVE DEPLOYED APP:
-// This code reads the API key from a secret environment variable named GOOGLE_API_KEY.
-// You MUST set this variable in your Firebase App Hosting backend settings.
-// 1. Go to Firebase Console -> App Hosting -> Your Backend -> Settings
-// 2. Scroll down to "Environment variables"
-// 3. Add a variable with the Name "GOOGLE_API_KEY" and your key as the Value.
-// 4. Republish your app.
+// ======================================================================================
+// !! IMPORTANT SECURITY WARNING !!
+// ======================================================================================
+// The API key is hardcoded below as a temporary workaround because you were unable
+// to set it as an environment variable in your Firebase settings.
 //
-// FOR LOCAL DEVELOPMENT:
-// This code will also read the key from a local .env file.
+// THIS IS NOT SECURE. In a real application, you should NEVER expose your API key
+// directly in the source code. Anyone who can see this code can steal your key.
+//
+// The correct way is to set this as a secret in your hosting provider's settings.
+// For Firebase App Hosting, this is done in:
+// Firebase Console -> App Hosting -> Your Backend -> Settings -> Environment variables
+// ======================================================================================
+
+// !! ACTION REQUIRED !!
+// Replace the placeholder text below with your actual Google AI (Gemini) API key.
+const GOOGLE_API_KEY = "YOUR_GOOGLE_API_KEY_HERE";
+
+
 export const ai = genkit({
   plugins: [
-    googleAI({apiKey: process.env.GOOGLE_API_KEY}),
+    googleAI({apiKey: GOOGLE_API_KEY}),
   ],
 });
