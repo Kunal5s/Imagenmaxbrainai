@@ -85,7 +85,7 @@ const generateImageFlow = ai.defineFlow(
                   },
                   {
                     category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                    threshold: 'BLOCK_ONLY_HIGH',
+                    threshold: 'BLOCK_NONE',
                   },
                   {
                     category: 'HARM_CATEGORY_HARASSMENT',
