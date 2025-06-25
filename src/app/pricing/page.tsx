@@ -6,81 +6,19 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
-
-const initialPlans = [
-  {
-    name: 'Free',
-    price: '$0',
-    priceSuffix: '',
-    description: 'For starters and hobbyists.',
-    features: [
-      '10 generations per day',
-      'Standard Quality (1080p)',
-      'Access to core models',
-      'Personal use license',
-    ],
-    buttonText: 'Start Generating',
-    buttonLink: '/#create',
-    polarLink: null,
-  },
-  {
-    name: 'Pro',
-    price: '$50',
-    priceSuffix: '/ month',
-    description: 'For professionals and creators.',
-    features: [
-      '3,000 credits per month',
-      'Fast generation speed',
-      '4K Ultra-High Quality',
-      'Access to all AI models',
-      'Commercial use license',
-      'Priority support',
-    ],
-    buttonText: 'Switch to Pro',
-    polarLink: 'https://buy.polar.sh/polar_cl_iQpYIoo3qkW310DMOKN5lXhQo70OHOiLLU5Fp0eZ49f',
-  },
-  {
-    name: 'Mega',
-    price: '$100',
-    priceSuffix: '/ month',
-    description: 'For power users and teams.',
-    features: [
-      '10,000 credits per month',
-      'Lightning-fast speed',
-      '4K Ultra-High Quality',
-      'API access (coming soon)',
-      'Team collaboration features',
-      'Dedicated support',
-    ],
-    buttonText: 'Switch to Mega',
-    polarLink: 'https://polar.sh/checkout/polar_c_tQZOjzbVYwZhnWg5tdpBcWpYyPzqQZzuvIClV0oUzrC',
-  },
-  {
-    name: 'Booster Pack',
-    price: '$20',
-    priceSuffix: 'one-time',
-    description: 'Add-on credit top-up.',
-    features: [
-      '1,000 credits',
-      'Immediately fast generation',
-      'Credits never expire',
-    ],
-    buttonText: 'Purchase',
-    polarLink: 'https://buy.polar.sh/polar_cl_u5vpk1YGAidaW5Lf7PXbDiWqo7jDVyWlv1v0o3G0NAh',
-  },
-];
+import { useUser } from '@/hooks/use-user-context';
 
 export default function PricingPage() {
   const { toast } = useToast();
-  const [activePlan, setActivePlan] = useState('Mega');
+  const { user, plans, isLoggedIn } = useUser();
 
-  const handlePlanChange = (planName: string) => {
-    if (planName === 'Booster Pack') {
-        toast({ title: "Booster Pack Purchased!", description: "1,000 credits have been added to your account." });
-        // In a real app, you would handle the purchase via the polarLink and a webhook
+  const handleScrollTo = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     } else {
-        setActivePlan(planName);
+      // If not on the home page, navigate and then scroll.
+      window.location.href = `/#${id}`;
     }
   };
 
@@ -94,12 +32,12 @@ export default function PricingPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
-        {initialPlans.map((plan) => {
-          const isCurrentPlan = activePlan === plan.name;
+        {plans.map((plan) => {
+          const isCurrentPlan = user.plan === plan.name;
           return (
           <Card
             key={plan.name}
-            className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${isCurrentPlan ? 'border-primary border-2 shadow-lg' : ''}`}
+            className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${isCurrentPlan && plan.name !== 'Free' ? 'border-primary border-2 shadow-lg' : ''}`}
           >
             <CardHeader>
               <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
@@ -124,17 +62,23 @@ export default function PricingPage() {
             <CardFooter>
                {isCurrentPlan && plan.name !== 'Free' ? (
                   <Button className="w-full" disabled variant="default">Current Plan</Button>
-                ) : plan.polarLink ? (
+                ) : plan.name === 'Free' ? (
+                 <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => handleScrollTo('create')}
+                  >
+                    {plan.buttonText}
+                  </Button>
+                ) : (
                 <Button asChild className="w-full" variant={'outline'}>
-                  <Link href={plan.polarLink} target="_blank" rel="noopener noreferrer" onClick={() => handlePlanChange(plan.name)}>{plan.buttonText}</Link>
-                </Button>
-              ) : plan.buttonLink ? (
-                <Button asChild className="w-full" variant={'outline'}>
-                  <Link href={plan.buttonLink}>{plan.buttonText}</Link>
-                </Button>
-              ) : (
-                <Button className="w-full" variant="outline" disabled>
-                  {plan.buttonText}
+                  <Link href={plan.polarLink!} target="_blank" rel="noopener noreferrer" onClick={() => {
+                        if (!isLoggedIn) {
+                          toast({ title: "Email Activation Required", description: "Please activate with your email first before purchasing.", variant: 'destructive'});
+                        }
+                      }}>
+                    {plan.buttonText}
+                  </Link>
                 </Button>
               )}
             </CardFooter>

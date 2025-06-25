@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { UserMenu } from './user-menu';
 
 const navLinks = [
   { href: '/', label: 'Generate Image' },
@@ -33,13 +35,16 @@ export default function Header() {
           </h1>
         </Link>
         
-        <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
-          {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex items-center gap-4">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <UserMenu />
+        </div>
 
         <div className="md:hidden">
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>

@@ -8,7 +8,7 @@ import { Sparkles, Palette, Layers, Zap, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useUser } from '@/hooks/use-user-context';
 
 const faqItems = [
     {
@@ -20,20 +20,20 @@ const faqItems = [
         answer: "Simply type a detailed description (a 'prompt') of the image you envision. Then, use our powerful tools to select an artistic style, aspect ratio, mood, lighting, and color palette. Click 'Generate', and our AI will produce four distinct image variations based on your input."
     },
     {
-        question: "Is this service free to use?",
-        answer: "Currently, Imagen Max BrainAi offers a generous free tier for all users to explore the core functionalities. We believe in making creativity accessible. In the future, we may introduce premium plans for advanced features and higher usage."
+        question: "How do credits work?",
+        answer: "You use credits to generate images. Each generation of 4 images costs a certain number of credits depending on your plan. You can start with a free generation, and then purchase a plan or a booster pack to get more credits."
     },
     {
         question: "Who owns the images I create?",
-        answer: "You do. As per our Terms of Service, you retain full ownership rights to the images you generate using your own prompts. You are free to use them for personal or commercial purposes."
+        answer: "You do. As per our Terms of Service, you retain full ownership rights to the images you generate using your own prompts. You are free to use them for personal or commercial purposes, depending on your plan."
     },
     {
         question: "What makes Imagen Max BrainAi different from other AI generators?",
         answer: "Our key differentiator is the combination of batch generation and deep customization. We generate four image options at once to give you more creative choice, and our detailed controls for mood, lighting, and color allow for unparalleled artistic direction."
     },
-    {
-        question: "Why do I get four images for every prompt?",
-        answer: "AI interpretation can be nuanced. By providing four variations, we increase the probability that you will get an image that perfectly matches your vision on the first try. This saves you time and provides diverse creative avenues to explore."
+     {
+        question: "How do I activate my purchased plan?",
+        answer: "After purchasing a plan via Polar, click the 'Activate Plan' button in the header. Enter the same email you used for the purchase, and your credits and plan features will be instantly unlocked for your browser session."
     },
     {
         question: "Can I control the dimensions of the generated images?",
@@ -45,7 +45,7 @@ const faqItems = [
     },
     {
         question: "Is my data and are my prompts kept private?",
-        answer: "We take your privacy very seriously. Your prompts are processed to generate images and to improve our service, but they are handled securely. For complete details, please read our Privacy Policy."
+        answer: "We take your privacy very seriously. Your prompts are processed to generate images and to improve our service, but they are handled securely. Your activated email is stored only in your browser. For complete details, please read our Privacy Policy."
     },
     {
         question: "I have a question or need help. How can I get support?",
@@ -71,85 +71,26 @@ const features = [
   }
 ];
 
-const initialPlans = [
-  {
-    name: 'Free',
-    price: '$0',
-    priceSuffix: '',
-    description: 'For starters and hobbyists.',
-    features: [
-      '10 generations per day',
-      'Standard Quality (1080p)',
-      'Access to core models',
-      'Personal use license',
-    ],
-    buttonText: 'Start Generating',
-    buttonLink: '/#create',
-    polarLink: null,
-  },
-  {
-    name: 'Pro',
-    price: '$50',
-    priceSuffix: '/ month',
-    description: 'For professionals and creators.',
-    features: [
-      '3,000 credits per month',
-      'Fast generation speed',
-      '4K Ultra-High Quality',
-      'Access to all AI models',
-      'Commercial use license',
-      'Priority support',
-    ],
-    buttonText: 'Switch to Pro',
-    polarLink: 'https://buy.polar.sh/polar_cl_iQpYIoo3qkW310DMOKN5lXhQo70OHOiLLU5Fp0eZ49f',
-  },
-  {
-    name: 'Mega',
-    price: '$100',
-    priceSuffix: '/ month',
-    description: 'For power users and teams.',
-    features: [
-      '10,000 credits per month',
-      'Lightning-fast speed',
-      '4K Ultra-High Quality',
-      'API access (coming soon)',
-      'Team collaboration features',
-      'Dedicated support',
-    ],
-    buttonText: 'Switch to Mega',
-    polarLink: 'https://polar.sh/checkout/polar_c_tQZOjzbVYwZhnWg5tdpBcWpYyPzqQZzuvIClV0oUzrC',
-  },
-  {
-    name: 'Booster Pack',
-    price: '$20',
-    priceSuffix: 'one-time',
-    description: 'Add-on credit top-up.',
-    features: [
-      '1,000 credits',
-      'Immediately fast generation',
-      'Credits never expire',
-    ],
-    buttonText: 'Purchase',
-    polarLink: 'https://buy.polar.sh/polar_cl_u5vpk1YGAidaW5Lf7PXbDiWqo7jDVyWlv1v0o3G0NAh',
-  },
-];
-
 
 export default function Home() {
   const { toast } = useToast();
-  const [activePlan, setActivePlan] = useState('Mega');
+  const { user, plans, activatePlan, isLoggedIn } = useUser();
 
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
   
-  const handlePlanChange = (planName: string) => {
-    if (planName === 'Booster Pack') {
+  const handlePlanPurchase = (planName: 'Pro' | 'Mega' | 'Booster Pack') => {
+      if (!isLoggedIn) {
+          toast({ title: "Email Activation Required", description: "Please click 'Activate Plan' in the header and enter your email before purchasing.", variant: 'destructive'});
+          return;
+      }
+      activatePlan(planName);
+      if (planName === 'Booster Pack') {
         toast({ title: "Booster Pack Purchased!", description: "1,000 credits have been added to your account." });
-        // In a real app, you would handle the purchase via the polarLink and a webhook
-    } else {
-        setActivePlan(planName);
-    }
+      } else {
+        toast({ title: "Plan Activated!", description: `You are now on the ${planName} plan.` });
+      }
   };
 
   return (
@@ -174,7 +115,7 @@ export default function Home() {
       </section>
 
       <div className="opacity-0 animate-fadeInUp" style={{animationDelay: '400ms'}}>
-        <ImageGenerator isProPlan={activePlan === 'Pro' || activePlan === 'Mega'} />
+        <ImageGenerator />
       </div>
 
       <section className="py-24 lg:py-32 bg-slate-50">
@@ -213,12 +154,12 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
-            {initialPlans.map((plan) => {
-              const isCurrentPlan = activePlan === plan.name;
+            {plans.map((plan) => {
+              const isCurrentPlan = user.plan === plan.name;
               return (
               <Card
                 key={plan.name}
-                className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${isCurrentPlan ? 'border-primary border-2 shadow-lg' : ''}`}
+                className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${isCurrentPlan && plan.name !== 'Free' ? 'border-primary border-2 shadow-lg' : ''}`}
               >
                 <CardHeader>
                   <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
@@ -243,20 +184,24 @@ export default function Home() {
                 <CardFooter>
                    {isCurrentPlan && plan.name !== 'Free' ? (
                       <Button className="w-full" disabled variant="default">Current Plan</Button>
-                    ) : plan.polarLink ? (
+                    ) : plan.name === 'Free' ? (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => handleScrollTo('create')}
+                      >
+                        {plan.buttonText}
+                      </Button>
+                    ) : (
                       <Button asChild className="w-full" variant="outline">
-                        <Link href={plan.polarLink} target="_blank" rel="noopener noreferrer" onClick={() => handlePlanChange(plan.name)}>
+                        <Link href={plan.polarLink!} target="_blank" rel="noopener noreferrer" onClick={() => {
+                          if (!isLoggedIn) {
+                            toast({ title: "Email Activation Required", description: "Please activate with your email first before purchasing.", variant: 'destructive'});
+                          }
+                        }}>
                           {plan.buttonText}
                         </Link>
                       </Button>
-                  ) : (
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      onClick={() => handleScrollTo('create')}
-                    >
-                      {plan.buttonText}
-                    </Button>
                   )}
                 </CardFooter>
               </Card>

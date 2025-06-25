@@ -1,9 +1,11 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Lora, Inter } from 'next/font/google';
+import { UserProvider } from '@/contexts/user-context';
 
 const headlineFont = Lora({
   subsets: ['latin'],
@@ -30,12 +32,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${headlineFont.variable} ${bodyFont.variable} font-body bg-background text-foreground antialiased`}>
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        <Toaster />
+        <UserProvider>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+          <Toaster />
+        </UserProvider>
       </body>
     </html>
   );

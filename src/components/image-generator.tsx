@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush, Diamond, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
-
+import { useUser } from '@/hooks/use-user-context';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 const styles = ["Photographic", "Digital Art", "Anime", "Cartoon", "Comic Book", "Cinematic", "3D Model", "Pixel Art", "Isometric", "Watercolor", "Impressionistic", "Surrealist", "Pop Art", "Minimalist", "Abstract", "Gouache", "Line Art", "Charcoal Sketch", "8-bit", "Woodblock Print", "Vintage Photography", "Double Exposure", "Marker Art"];
 const aspectRatios = ["Square (1:1)", "Portrait (4:5)", "Tall Portrait (9:16)", "Classic Portrait (2:3)", "Landscape (5:4)", "Widescreen (16:9)", "Classic Landscape (3:2)", "Cinematic (2.39:1)", "Ultra Wide (3:1)", "Banner (4:1)"];
@@ -23,7 +24,6 @@ const moods = ["Cyberpunk", "Dreamy", "Gothic", "Kawaii", "Steampunk", "Wastelan
 const lightings = ["Bright", "Neon", "Misty", "Ethereal", "Sunset", "Golden Hour", "Blue Hour", "Volumetric", "Soft", "Hard", "Rembrandt", "Backlight"];
 const colorPalettes = ["Default", "Cool Tones", "Warm Tones", "Pastel Dreams", "Indigo Night", "Infrared Vision", "Monochromatic", "Earthy Tones", "Vibrant Neon", "Vintage Sepia", "Synthwave"];
 const qualities = ["Standard (1080p)", "4K Quality"];
-
 
 interface GenerationSettings {
   prompt: string;
@@ -54,8 +54,13 @@ const getAspectRatioForCss = (ratioString: string | undefined): string => {
   return '1 / 1';
 };
 
+export default function ImageGenerator() {
+  const { user, deductCredits, getPlanByName } = useUser();
+  const { toast } = useToast();
+  
+  const currentPlan = getPlanByName(user.plan);
+  const isProPlan = user.plan === 'Pro' || user.plan === 'Mega';
 
-export default function ImageGenerator({ isProPlan = false }: { isProPlan?: boolean }) {
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -63,8 +68,8 @@ export default function ImageGenerator({ isProPlan = false }: { isProPlan?: bool
   const [promptSuggestions, setPromptSuggestions] = useState<string[] | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const { toast } = useToast();
-
+  const canGenerate = user.plan === 'Free' ? !user.freeGenerationUsed : user.credits >= (currentPlan?.costPerGeneration ?? 10);
+  
   useEffect(() => {
     try {
       const savedSettings = localStorage.getItem('imageGeneratorSettings');
@@ -87,6 +92,12 @@ export default function ImageGenerator({ isProPlan = false }: { isProPlan?: bool
       console.error("Failed to save settings to localStorage", error);
     }
   }, [settings]);
+  
+  useEffect(() => {
+    if (!isProPlan && settings.quality === '4K Quality') {
+        handleSettingChange('quality', 'Standard (1080p)');
+    }
+  }, [isProPlan, settings.quality]);
 
   const handleSettingChange = (key: keyof GenerationSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -116,6 +127,15 @@ export default function ImageGenerator({ isProPlan = false }: { isProPlan?: bool
       return;
     }
 
+    if (!canGenerate) {
+        toast({
+            title: 'Out of Credits',
+            description: user.plan === 'Free' ? 'You have used your free generation. Please upgrade to a plan to continue.' : 'You do not have enough credits. Please purchase a new plan or booster pack.',
+            variant: 'destructive',
+        });
+        return;
+    }
+
     setIsLoading(true);
     setGeneratedImages(null);
     setPromptSuggestions(null);
@@ -133,6 +153,11 @@ export default function ImageGenerator({ isProPlan = false }: { isProPlan?: bool
       };
       const result = await generateImage(input);
       setGeneratedImages(result.imageDataUris);
+      deductCredits(currentPlan?.costPerGeneration ?? 10);
+      toast({
+          title: 'Success!',
+          description: `${currentPlan?.costPerGeneration ?? 10} credits deducted. You have ${user.credits - (currentPlan?.costPerGeneration ?? 10)} credits remaining.`
+      })
     } catch (error) {
       console.error('Failed to generate image', error);
       let errorMessage = 'An unknown error occurred.';
@@ -167,62 +192,12 @@ Please follow these steps exactly:
   };
 
   const handleDownload = (imageSrc: string, index: number) => {
-    const image = new window.Image();
-    image.src = imageSrc;
-    image.crossOrigin = 'anonymous';
-
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        toast({ title: 'Download Error', description: 'Could not prepare image for download.', variant: 'destructive' });
-        return;
-      }
-
-      const ratioString = settings.aspectRatio;
-      const match = ratioString.match(/\(([^)]+)\)/);
-      
-      const targetAspectRatio = match ? eval(match[1].replace(':', '/')) : 1;
-
-      let sx, sy, sWidth, sHeight;
-      const originalWidth = image.naturalWidth;
-      const originalHeight = image.naturalHeight;
-      const originalAspectRatio = originalWidth / originalHeight;
-
-      if (originalAspectRatio > targetAspectRatio) {
-        sHeight = originalHeight;
-        sWidth = originalHeight * targetAspectRatio;
-        sx = (originalWidth - sWidth) / 2;
-        sy = 0;
-      } else {
-        sWidth = originalWidth;
-        sHeight = originalWidth / targetAspectRatio;
-        sx = 0;
-        sy = (originalHeight - sHeight) / 2;
-      }
-      
-      canvas.width = sWidth;
-      canvas.height = sHeight;
-
-      ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
-
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = `imagenmax-ai-creation-${index + 1}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
-
-    image.onerror = () => {
-      toast({ title: 'Download Error', description: 'Could not load image data to process.', variant: 'destructive' });
-      const link = document.createElement('a');
-      link.href = imageSrc;
-      link.download = `imagenmax-ai-creation-${index + 1}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
+    const link = document.createElement('a');
+    link.href = imageSrc;
+    link.download = `imagenmax-ai-creation-${index + 1}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
 
@@ -318,7 +293,7 @@ Please follow these steps exactly:
                                 value={s}
                                 disabled={s === '4K Quality' && !isProPlan}
                               >
-                                {s}{s === '4K Quality' && !isProPlan && ' (Pro only)'}
+                                {s}{s === '4K Quality' && !isProPlan && ' (Pro plan required)'}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -334,7 +309,7 @@ Please follow these steps exactly:
                       type="submit"
                       size="lg"
                       className="w-full sm:w-auto flex-grow font-bold hover:scale-105 transition-transform"
-                      disabled={isLoading}
+                      disabled={isLoading || !canGenerate}
                   >
                       {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
                   </Button>
@@ -350,6 +325,12 @@ Please follow these steps exactly:
                       Suggest Prompts
                   </Button>
               </div>
+              {!canGenerate && (
+                  <div className="text-center text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                     {user.plan === 'Free' ? "You've used your free generation." : "You're out of credits."} 
+                     <Button variant="link" asChild className="p-1 h-auto"><Link href="/pricing">Upgrade your plan to continue.</Link></Button>
+                  </div>
+              )}
             </form>
           </CardContent>
         </Card>
