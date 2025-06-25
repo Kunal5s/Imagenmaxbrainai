@@ -33,9 +33,9 @@ const plans = [
       'Commercial use license',
       'Priority support',
     ],
-    buttonText: 'Switch to Pro',
+    buttonText: 'Current Plan',
     buttonLink: '#',
-    highlighted: false,
+    highlighted: true,
   },
   {
     name: 'Mega',
@@ -64,9 +64,9 @@ const plans = [
       'Immediately fast generation',
       'Credits never expire',
     ],
-    buttonText: 'Purchased',
+    buttonText: 'Purchase',
     buttonLink: '#',
-    highlighted: true,
+    highlighted: false,
   },
 ];
 
