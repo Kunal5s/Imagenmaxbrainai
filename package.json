@@ -56,5 +56,11 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "tsx": "^4.16.2"
+  },
+  "overrides": {
+    "@genkit-ai/next": {
+      "next": "$next",
+      "genkit": "$genkit"
+    }
   }
 }
