@@ -143,7 +143,6 @@ export default function ImageGenerator() {
     const creditsBeforeGeneration = user.credits;
 
     try {
-      deductCredits();
       const input: GenerateImageInput = {
         prompt: settings.prompt,
         style: settings.style === 'None' ? undefined : settings.style,
@@ -153,7 +152,10 @@ export default function ImageGenerator() {
         colorPalette: settings.colorPalette === 'None' || settings.colorPalette === 'Default' ? undefined : settings.colorPalette,
         quality: settings.quality,
       };
+      
       const result = await generateImage(input);
+
+      deductCredits();
       setGeneratedImages(result.imageDataUris);
       
       toast({
@@ -185,7 +187,7 @@ It is highly recommended to set the API key as an environment variable named \`G
 
       toast({
         title: 'Image Generation Failed',
-        description: `Could not generate images. ${errorMessage}`,
+        description: `Could not generate images. Credits have not been deducted. ${errorMessage}`,
         variant: 'destructive',
       });
     } finally {
