@@ -8,6 +8,7 @@ import { Sparkles, Palette, Layers, Zap, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 const faqItems = [
     {
@@ -70,7 +71,7 @@ const features = [
   }
 ];
 
-const plans = [
+const initialPlans = [
   {
     name: 'Free',
     price: '$0',
@@ -116,7 +117,7 @@ const plans = [
       'Dedicated support',
     ],
     buttonText: 'Switch to Mega',
-    polarLink: 'https://buy.polar.sh/YOUR_MEGA_PLAN_ID',
+    polarLink: 'https://buy.polar.sh/polar_cl_uXQb5IyDgK3uZfxBDLb8EWbNFHBfBG2JzuiDs4QCkYi',
   },
   {
     name: 'Booster Pack',
@@ -129,19 +130,28 @@ const plans = [
       'Credits never expire',
     ],
     buttonText: 'Purchase',
-    polarLink: 'https://buy.polar.sh/YOUR_BOOSTER_PACK_ID',
+    polarLink: 'https://buy.polar.sh/polar_cl_uXQb5IyDgK3uZfxBDLb8EWbNFHBfBG2JzuiDs4QCkYi',
   },
 ];
 
 
 export default function Home() {
   const { toast } = useToast();
-  const isProPlan = false; 
+  const [activePlan, setActivePlan] = useState('Free');
 
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
   
+  const handlePlanChange = (planName: string) => {
+    if (planName === 'Booster Pack') {
+        toast({ title: "Booster Pack Purchased!", description: "1,000 credits have been added to your account." });
+        // In a real app, you would handle the purchase via the polarLink and a webhook
+    } else {
+        setActivePlan(planName);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
       <section className="text-center py-24 lg:py-32 px-4 container mx-auto">
@@ -164,7 +174,7 @@ export default function Home() {
       </section>
 
       <div className="opacity-0 animate-fadeInUp" style={{animationDelay: '400ms'}}>
-        <ImageGenerator isProPlan={isProPlan} />
+        <ImageGenerator isProPlan={activePlan === 'Pro' || activePlan === 'Mega'} />
       </div>
 
       <section className="py-24 lg:py-32 bg-slate-50">
@@ -203,10 +213,12 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
-            {plans.map((plan) => (
+            {initialPlans.map((plan) => {
+              const isCurrentPlan = activePlan === plan.name;
+              return (
               <Card
                 key={plan.name}
-                className={'flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg'}
+                className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${isCurrentPlan ? 'border-primary border-2 shadow-lg' : ''}`}
               >
                 <CardHeader>
                   <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
@@ -229,12 +241,14 @@ export default function Home() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                   {plan.polarLink ? (
-                    <Button asChild className="w-full" variant="outline">
-                      <Link href={plan.polarLink} target="_blank" rel="noopener noreferrer">
-                        {plan.buttonText}
-                      </Link>
-                    </Button>
+                   {isCurrentPlan && plan.name !== 'Free' ? (
+                      <Button className="w-full" disabled variant="default">Current Plan</Button>
+                    ) : plan.polarLink ? (
+                      <Button asChild className="w-full" variant="outline">
+                        <Link href={plan.polarLink} target="_blank" rel="noopener noreferrer" onClick={() => handlePlanChange(plan.name)}>
+                          {plan.buttonText}
+                        </Link>
+                      </Button>
                   ) : (
                     <Button
                       className="w-full"
@@ -246,7 +260,7 @@ export default function Home() {
                   )}
                 </CardFooter>
               </Card>
-            ))}
+            )})}
           </div>
         </div>
       </section>
