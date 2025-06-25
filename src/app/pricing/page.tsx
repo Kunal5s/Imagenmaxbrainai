@@ -33,9 +33,9 @@ const plans = [
       'Commercial use license',
       'Priority support',
     ],
-    buttonText: 'Current Plan',
+    buttonText: 'Switch to Pro',
     buttonLink: '#',
-    highlighted: true,
+    highlighted: false,
   },
   {
     name: 'Mega',
@@ -50,9 +50,9 @@ const plans = [
       'Team collaboration features',
       'Dedicated support',
     ],
-    buttonText: 'Upgrade to Mega',
+    buttonText: 'Current Plan',
     buttonLink: '#',
-    highlighted: false,
+    highlighted: true,
   },
   {
     name: 'Booster Pack',
