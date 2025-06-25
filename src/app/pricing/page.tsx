@@ -50,9 +50,9 @@ const plans = [
       'Team collaboration features',
       'Dedicated support',
     ],
-    buttonText: 'Current Plan',
+    buttonText: 'Switch to Mega',
     buttonLink: '#',
-    highlighted: true,
+    highlighted: false,
   },
   {
     name: 'Booster Pack',
@@ -64,9 +64,9 @@ const plans = [
       'Immediately fast generation',
       'Credits never expire',
     ],
-    buttonText: 'Buy Credits',
+    buttonText: 'Purchased',
     buttonLink: '#',
-    highlighted: false,
+    highlighted: true,
   },
 ];
 
