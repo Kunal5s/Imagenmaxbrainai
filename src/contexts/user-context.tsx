@@ -38,7 +38,7 @@ interface UserContextType {
 const defaultUser: User = {
   email: null,
   plan: 'Free',
-  credits: 5,
+  credits: 10,
   planExpiration: null,
 };
 
@@ -49,12 +49,12 @@ export const plans: Plan[] = [
     priceSuffix: '',
     description: 'For starters and hobbyists.',
     features: [
-      '5 free credits',
-      'Cost: 1 credit / generation',
+      '10 free credits',
       'Standard Quality (1080p)',
+      'Access to core models',
       'Personal use license',
     ],
-    credits: 5,
+    credits: 10,
     costPerGeneration: 1,
     polarLink: null,
     buttonText: 'Start Generating',
@@ -66,16 +66,17 @@ export const plans: Plan[] = [
     description: 'For professionals and creators.',
     features: [
       '3,000 credits per month',
-      'Cost: 10 credits / generation',
+      'Fast generation speed',
       '4K Ultra-High Quality',
+      'Access to all AI models',
       'Commercial use license',
-      'Credits expire after 30 days',
+      'Priority support',
     ],
     credits: 3000,
     costPerGeneration: 10,
     durationDays: 30,
     polarLink: 'https://buy.polar.sh/polar_cl_iQpYIoo3qkW310DMOKN5lXhQo70OHOiLLU5Fp0eZ49f',
-    buttonText: 'Switch to Pro',
+    buttonText: 'Upgrade to Pro',
   },
   {
     name: 'Mega',
@@ -84,16 +85,17 @@ export const plans: Plan[] = [
     description: 'For power users and teams.',
     features: [
       '10,000 credits per month',
-      'Cost: 20 credits / generation',
       'Lightning-fast speed',
       '4K Ultra-High Quality',
-      'Credits expire after 30 days',
+      'API access (coming soon)',
+      'Team collaboration features',
+      'Dedicated support',
     ],
     credits: 10000,
     costPerGeneration: 20,
     durationDays: 30,
     polarLink: 'https://polar.sh/checkout/polar_c_tQZOjzbVYwZhnWg5tdpBcWpYyPzqQZzuvIClV0oUzrC',
-    buttonText: 'Switch to Mega',
+    buttonText: 'Upgrade to Mega',
   },
   {
     name: 'Booster Pack',
@@ -102,14 +104,13 @@ export const plans: Plan[] = [
     description: 'Add-on credit top-up.',
     features: [
       '1,000 credits',
-      'Cost: 30 credits / generation',
-      'Credits expire after 30 days',
+      'Immediately fast generation',
+      'Credits never expire',
     ],
     credits: 1000,
     costPerGeneration: 30,
-    durationDays: 30,
     polarLink: 'https://buy.polar.sh/polar_cl_u5vpk1YGAidaW5Lf7PXbDiWqo7jDVyWlv1v0o3G0NAh',
-    buttonText: 'Purchase',
+    buttonText: 'Buy Credits',
   },
 ];
 
@@ -143,7 +144,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         currentUser = JSON.parse(storedUser);
       } else {
         // First time this email is used on this browser, give free credits
-        currentUser = { ...defaultUser, email, plan: 'Free', credits: 5 };
+        currentUser = { ...defaultUser, email, plan: 'Free', credits: 10 };
       }
       
       // Check for expiration
@@ -156,7 +157,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     } catch (error) {
       console.error("Failed to load user state from localStorage", error);
-      setUser({ ...defaultUser, email, plan: 'Free', credits: 5 });
+      setUser({ ...defaultUser, email, plan: 'Free', credits: 10 });
     }
   }, []);
 
@@ -209,42 +210,52 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     setUser(currentUser => {
       if (!currentUser.email) {
-        // This case is handled in the UI, but as a safeguard.
         console.error("Cannot activate a plan without a logged-in user.");
         return currentUser;
       }
         
       const isExpired = currentUser.planExpiration ? isPast(new Date(currentUser.planExpiration)) : true;
       
-      // If plan is expired or was free, start with 0, otherwise keep existing credits
-      const baseCredits = (isExpired || currentUser.plan === 'Free') ? 0 : currentUser.credits;
-      const newCredits = baseCredits + plan.credits;
+      // Credits from an expired plan are lost. Active plan credits are kept.
+      const currentCredits = isExpired ? 0 : currentUser.credits;
+      const newCredits = currentCredits + plan.credits;
       
-      const newExpirationDate = add(new Date(), { days: plan.durationDays || 30 });
+      let newExpiration = currentUser.planExpiration;
+      // Only set/reset expiration for plans that have a duration (Pro/Mega)
+      if (plan.durationDays) {
+        newExpiration = add(new Date(), { days: plan.durationDays }).toISOString();
+      }
 
-      // If user buys a Booster pack while on a Pro/Mega plan, just add credits and extend date
-      // but keep the plan name. Otherwise, set the new plan name.
-      let newPlanName: Plan['name'] = plan.name;
-      if (plan.name === 'Booster Pack' && (currentUser.plan === 'Pro' || currentUser.plan === 'Mega') && !isExpired) {
-          newPlanName = currentUser.plan;
+      let newPlanName = currentUser.plan;
+      // If the new plan is a monthly subscription, it becomes the new active plan.
+      if (plan.name === 'Pro' || plan.name === 'Mega') {
+        newPlanName = plan.name;
+      } else if (isExpired) {
+        // If the old plan was expired and they buy a booster, they are on a 'Free' plan with credits.
+        newPlanName = 'Free';
       }
       
       return {
           ...currentUser,
           plan: newPlanName,
           credits: newCredits,
-          planExpiration: newExpirationDate.toISOString(),
+          planExpiration: newExpiration,
       };
     });
   }, [getPlanByName]);
   
   const deductCredits = useCallback((amount: number) => {
-      if (user.credits >= amount) {
-          setUser(prev => ({ ...prev, credits: prev.credits - amount }));
+      // For free users, generation cost is 1 credit. 
+      // For paid users, we get the cost from their plan.
+      const plan = getPlanByName(user.plan);
+      const cost = plan?.costPerGeneration ?? 1;
+
+      if (user.credits >= cost) {
+          setUser(prev => ({ ...prev, credits: prev.credits - cost }));
       } else {
           console.error("Insufficient credits");
       }
-  }, [user.credits]);
+  }, [user.credits, user.plan, getPlanByName]);
 
   const value = {
     user,
