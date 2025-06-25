@@ -30,7 +30,7 @@ interface UserContextType {
   login: (email: string) => void;
   logout: () => void;
   activatePlan: (planName: Plan['name']) => void;
-  deductCredits: (amount: number) => void;
+  deductCredits: () => void;
   isLoggedIn: boolean;
   getPlanByName: (planName: Plan['name']) => Plan | undefined;
 }
@@ -49,13 +49,13 @@ export const plans: Plan[] = [
     priceSuffix: '',
     description: 'For starters and hobbyists.',
     features: [
-      '10 free credits',
+      '10 free credits (5 generations)',
       'Standard Quality (1080p)',
       'Access to core models',
       'Personal use license',
     ],
     credits: 10,
-    costPerGeneration: 1,
+    costPerGeneration: 2,
     polarLink: null,
     buttonText: 'Start Generating',
   },
@@ -104,8 +104,8 @@ export const plans: Plan[] = [
     description: 'Add-on credit top-up.',
     features: [
       '1,000 credits',
+      'Credits do not expire',
       'Immediately fast generation',
-      'Credits never expire',
     ],
     credits: 1000,
     costPerGeneration: 30,
@@ -148,7 +148,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Check for expiration
-      if (currentUser.planExpiration && isPast(new Date(currentUser.planExpiration))) {
+      if (currentUser.plan !== 'Booster Pack' && currentUser.planExpiration && isPast(new Date(currentUser.planExpiration))) {
         console.log(`Plan for ${email} expired. Resetting to Free plan.`);
         currentUser = { ...defaultUser, email: currentUser.email, plan: 'Free', credits: 0 };
       }
@@ -216,22 +216,29 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         
       const isExpired = currentUser.planExpiration ? isPast(new Date(currentUser.planExpiration)) : true;
       
-      // Credits from an expired plan are lost. Active plan credits are kept.
       const currentCredits = isExpired ? 0 : currentUser.credits;
       const newCredits = currentCredits + plan.credits;
       
-      let newExpiration = currentUser.planExpiration;
-      // Only set/reset expiration for plans that have a duration (Pro/Mega)
+      let newExpiration: string | null = null;
+      // Only set/reset expiration for plans that have a duration
       if (plan.durationDays) {
-        newExpiration = add(new Date(), { days: plan.durationDays }).toISOString();
+          const now = new Date();
+          const currentExpiration = (currentUser.planExpiration && !isExpired) ? new Date(currentUser.planExpiration) : now;
+          // Extend from the current expiration date if it exists and is in the future, otherwise from now.
+          const newExpirationDate = add(currentExpiration > now ? currentExpiration : now, { days: plan.durationDays });
+          newExpiration = newExpirationDate.toISOString();
+      } else {
+          // Booster pack credits don't expire, so we don't set an expiration date
+          // If a user has an active subscription, we keep its expiration date.
+          newExpiration = isExpired ? null : currentUser.planExpiration;
       }
-
+      
       let newPlanName = currentUser.plan;
-      // If the new plan is a monthly subscription, it becomes the new active plan.
       if (plan.name === 'Pro' || plan.name === 'Mega') {
         newPlanName = plan.name;
-      } else if (isExpired) {
-        // If the old plan was expired and they buy a booster, they are on a 'Free' plan with credits.
+      } else if (currentUser.plan === 'Free' || isExpired) {
+        // If they buy a booster while on free/expired plan, they don't get a "plan name"
+        // but their credits are boosted. The plan remains Free conceptually.
         newPlanName = 'Free';
       }
       
@@ -244,16 +251,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [getPlanByName]);
   
-  const deductCredits = useCallback((amount: number) => {
-      // For free users, generation cost is 1 credit. 
-      // For paid users, we get the cost from their plan.
+  const deductCredits = useCallback(() => {
       const plan = getPlanByName(user.plan);
-      const cost = plan?.costPerGeneration ?? 1;
+      const cost = plan?.costPerGeneration ?? 2;
 
       if (user.credits >= cost) {
           setUser(prev => ({ ...prev, credits: prev.credits - cost }));
       } else {
           console.error("Insufficient credits");
+          throw new Error("Insufficient credits");
       }
   }, [user.credits, user.plan, getPlanByName]);
 

@@ -60,7 +60,7 @@ export default function ImageGenerator() {
   
   const currentPlan = getPlanByName(user.plan);
   const isProOrMegaPlan = user.plan === 'Pro' || user.plan === 'Mega';
-  const costPerGeneration = currentPlan?.costPerGeneration ?? 1;
+  const costPerGeneration = currentPlan?.costPerGeneration ?? 2;
   const canGenerate = user.credits >= costPerGeneration;
 
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
@@ -149,8 +149,10 @@ export default function ImageGenerator() {
     setGeneratedImages(null);
     setPromptSuggestions(null);
     setApiError(null);
+    const creditsBeforeGeneration = user.credits;
 
     try {
+      deductCredits();
       const input: GenerateImageInput = {
         prompt: settings.prompt,
         style: settings.style === 'None' ? undefined : settings.style,
@@ -162,11 +164,10 @@ export default function ImageGenerator() {
       };
       const result = await generateImage(input);
       setGeneratedImages(result.imageDataUris);
-      deductCredits(costPerGeneration);
       
       toast({
           title: 'Success!',
-          description: `${costPerGeneration} credits deducted. You have ${user.credits - costPerGeneration} credits remaining.`
+          description: `${costPerGeneration} credits deducted. You have ${creditsBeforeGeneration - costPerGeneration} credits remaining.`
       })
     } catch (error) {
       console.error('Failed to generate image', error);
@@ -218,13 +219,13 @@ Please follow these steps exactly:
           <CardContent className="p-6">
             
             {isLoggedIn && (
-              <div className="flex justify-between items-center mb-4 text-sm bg-secondary p-3 rounded-lg">
-                  <span className="font-medium text-secondary-foreground">
-                      Current Plan: <span className="font-bold">{currentPlan?.name ?? 'Free'}</span>
+              <div className="flex justify-between items-center mb-4 text-sm bg-primary/10 p-3 rounded-lg">
+                  <span className="font-medium text-foreground">
+                      Plan: <span className="font-bold">{currentPlan?.name ?? 'Free'}</span>
                   </span>
-                  <div className="flex items-center gap-2 font-bold text-foreground">
+                  <div className="flex items-center gap-2 font-bold text-primary">
                       <Diamond size={16} />
-                      <span>{user.credits.toLocaleString()} Credits Remaining</span>
+                      <span>{user.credits.toLocaleString()} Credits</span>
                   </div>
               </div>
             )}
