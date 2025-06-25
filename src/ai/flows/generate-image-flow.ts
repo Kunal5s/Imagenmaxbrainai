@@ -26,6 +26,7 @@ const GenerateImageOutputSchema = z.object({
   imageDataUris: z
     .array(z.string())
     .describe('The generated images as data URIs.'),
+  error: z.string().optional().describe('An error message if image generation failed.'),
 });
 export type GenerateImageOutput = z.infer<typeof GenerateImageOutputSchema>;
 
@@ -130,9 +131,11 @@ const generateImageFlow = ai.defineFlow(
     }
     
     if (imageDataUris.length === 0) {
-        throw new Error(errorMessages.join(' ') || 'Image generation failed. This might be due to a connection issue, an invalid API key, or a prompt that violates safety policies. Please try again.');
+        const finalErrorMessage = errorMessages.join(' ') || 'Image generation failed. This might be due to a connection issue, an invalid API key, or a prompt that violates safety policies. Please try again.';
+        console.error('Image Generation Flow Error:', finalErrorMessage);
+        return { imageDataUris: [], error: finalErrorMessage };
     }
 
-    return { imageDataUris };
+    return { imageDataUris, error: undefined };
   }
 );

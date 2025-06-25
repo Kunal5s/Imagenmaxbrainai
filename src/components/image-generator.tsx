@@ -155,21 +155,16 @@ export default function ImageGenerator() {
       
       const result = await generateImage(input);
 
-      deductCredits();
-      setGeneratedImages(result.imageDataUris);
-      
-      toast({
-          title: 'Success!',
-          description: `${costPerGeneration} credits deducted. You have ${creditsBeforeGeneration - costPerGeneration} credits remaining.`
-      })
-    } catch (error) {
-      console.error('Failed to generate image', error);
-      let errorMessage = 'An unknown error occurred.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
-      if (/API key|permission|denied|billing|quota|safety/i.test(errorMessage)) {
+      if (result.error || result.imageDataUris.length === 0) {
+        const errorMessage = result.error || 'An unknown error occurred and no images were generated.';
+        toast({
+          title: 'Image Generation Failed',
+          description: `Could not generate images. Credits have not been deducted. ${errorMessage}`,
+          variant: 'destructive',
+          duration: 9000,
+        });
+
+        if (/API key|permission|denied|billing|quota|safety/i.test(errorMessage)) {
           setApiError(
 `Image generation failed. This is likely due to an issue with your Google AI API Key.
 
@@ -181,10 +176,19 @@ Please check the following:
 **For production deployment (like on Netlify):**
 It is highly recommended to set the API key as an environment variable named \`GOOGLE_API_KEY\` in your hosting provider's settings instead of leaving it in the code.`
           );
+        }
       } else {
-        setApiError(null);
+        deductCredits();
+        setGeneratedImages(result.imageDataUris);
+        toast({
+            title: 'Success!',
+            description: `${costPerGeneration} credits deducted. You have ${creditsBeforeGeneration - costPerGeneration} credits remaining.`
+        });
       }
-
+    } catch (error) {
+      console.error('Failed to generate image', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      
       toast({
         title: 'Image Generation Failed',
         description: `Could not generate images. Credits have not been deducted. ${errorMessage}`,
