@@ -7,6 +7,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Sparkles, Palette, Layers, Zap, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const faqItems = [
     {
@@ -83,7 +85,6 @@ const plans = [
     ],
     buttonText: 'Start Generating',
     buttonLink: '/#create',
-    highlighted: false,
   },
   {
     name: 'Pro',
@@ -98,9 +99,8 @@ const plans = [
       'Commercial use license',
       'Priority support',
     ],
-    buttonText: 'Current Plan',
+    buttonText: 'Switch to Pro',
     buttonLink: '#',
-    highlighted: true,
   },
   {
     name: 'Mega',
@@ -117,7 +117,6 @@ const plans = [
     ],
     buttonText: 'Switch to Mega',
     buttonLink: '#',
-    highlighted: false,
   },
   {
     name: 'Booster Pack',
@@ -131,18 +130,36 @@ const plans = [
     ],
     buttonText: 'Purchase',
     buttonLink: '#',
-    highlighted: false,
   },
 ];
 
 
 export default function Home() {
+  const [activePlanName, setActivePlanName] = useState('Pro');
+  const { toast } = useToast();
+
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
   
-  const activePlan = plans.find((plan) => plan.highlighted);
-  const isProPlan = activePlan?.name === 'Pro' || activePlan?.name === 'Mega';
+  const isProPlan = activePlanName === 'Pro' || activePlanName === 'Mega';
+
+  const handlePlanButtonClick = (planName: string, buttonLink: string) => {
+    if (planName === 'Pro' || planName === 'Mega') {
+      setActivePlanName(planName);
+      toast({
+        title: "Plan Changed!",
+        description: `You are now on the ${planName} plan.`,
+      });
+    } else if (planName === 'Free') {
+      handleScrollTo(buttonLink.substring(2)); 
+    } else if (planName === 'Booster Pack') {
+      toast({
+        title: "Thank You!",
+        description: "Your Booster Pack credits have been added.",
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
@@ -208,7 +225,7 @@ export default function Home() {
             {plans.map((plan) => (
               <Card
                 key={plan.name}
-                className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${plan.highlighted ? 'border-primary shadow-md' : ''}`}
+                className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${activePlanName === plan.name ? 'border-primary shadow-md' : ''}`}
               >
                 <CardHeader>
                   <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
@@ -231,13 +248,17 @@ export default function Home() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  {plan.highlighted ? (
+                  {activePlanName === plan.name ? (
                     <Button className="w-full" variant="default" disabled>
-                      {plan.buttonText}
+                      Current Plan
                     </Button>
                   ) : (
-                    <Button asChild className="w-full" variant={'outline'}>
-                      <Link href={plan.buttonLink}>{plan.buttonText}</Link>
+                    <Button 
+                      className="w-full" 
+                      variant={'outline'} 
+                      onClick={() => handlePlanButtonClick(plan.name, plan.buttonLink)}
+                    >
+                      {plan.buttonText}
                     </Button>
                   )}
                 </CardFooter>
