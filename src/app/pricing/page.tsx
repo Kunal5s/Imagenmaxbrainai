@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 
 const plans = [
   {
@@ -22,6 +20,7 @@ const plans = [
     ],
     buttonText: 'Start Generating',
     buttonLink: '/#create',
+    polarLink: null,
   },
   {
     name: 'Pro',
@@ -38,6 +37,7 @@ const plans = [
     ],
     buttonText: 'Switch to Pro',
     buttonLink: '#',
+    polarLink: 'https://buy.polar.sh/YOUR_PRO_PLAN_ID',
   },
   {
     name: 'Mega',
@@ -54,6 +54,7 @@ const plans = [
     ],
     buttonText: 'Switch to Mega',
     buttonLink: '#',
+    polarLink: 'https://buy.polar.sh/YOUR_MEGA_PLAN_ID',
   },
   {
     name: 'Booster Pack',
@@ -67,28 +68,11 @@ const plans = [
     ],
     buttonText: 'Purchase',
     buttonLink: '#',
+    polarLink: 'https://buy.polar.sh/YOUR_BOOSTER_PACK_ID',
   },
 ];
 
 export default function PricingPage() {
-  const [activePlanName, setActivePlanName] = useState('Pro');
-  const { toast } = useToast();
-
-  const handlePlanButtonClick = (planName: string) => {
-    if (planName === 'Pro' || planName === 'Mega') {
-      setActivePlanName(planName);
-      toast({
-        title: "Plan Changed!",
-        description: `You are now on the ${planName} plan.`,
-      });
-    } else if (planName === 'Booster Pack') {
-      toast({
-        title: "Thank You!",
-        description: "Your Booster Pack credits have been added.",
-      });
-    }
-  };
-
   return (
     <div className="container mx-auto py-16 md:py-24 px-4 max-w-6xl opacity-0 animate-fadeInUp">
       <div className="text-center mb-12">
@@ -102,7 +86,7 @@ export default function PricingPage() {
         {plans.map((plan) => (
           <Card
             key={plan.name}
-            className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${activePlanName === plan.name ? 'border-primary shadow-md' : ''}`}
+            className={'flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg'}
           >
             <CardHeader>
               <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
@@ -125,20 +109,16 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              {activePlanName === plan.name ? (
-                <Button className="w-full" variant="default" disabled>
-                  Current Plan
+              {plan.polarLink ? (
+                <Button asChild className="w-full" variant={'outline'}>
+                  <Link href={plan.polarLink} target="_blank" rel="noopener noreferrer">{plan.buttonText}</Link>
                 </Button>
-              ) : plan.name === 'Free' ? (
+              ) : plan.buttonLink ? (
                 <Button asChild className="w-full" variant={'outline'}>
                   <Link href={plan.buttonLink}>{plan.buttonText}</Link>
                 </Button>
               ) : (
-                <Button 
-                  className="w-full" 
-                  variant={'outline'} 
-                  onClick={() => handlePlanButtonClick(plan.name)}
-                >
+                <Button className="w-full" variant="outline" disabled>
                   {plan.buttonText}
                 </Button>
               )}
