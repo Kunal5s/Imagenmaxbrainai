@@ -10,7 +10,7 @@ import type { Plan } from '@/contexts/user-context';
 
 export default function PricingPage() {
   const { toast } = useToast();
-  const { user, plans, isLoggedIn, activatePlan } = useUser();
+  const { user, plans, isLoggedIn, activatePlan, setActivationDialogOpen, setPlanToPurchase } = useUser();
 
   const handleScrollTo = (id: string) => {
     const element = document.getElementById(id);
@@ -23,11 +23,8 @@ export default function PricingPage() {
 
   const handlePurchase = (plan: Plan) => {
     if (!isLoggedIn) {
-      toast({
-        title: 'Email Activation Required',
-        description: 'Please activate with your email first before purchasing.',
-        variant: 'destructive',
-      });
+      setPlanToPurchase(plan.name);
+      setActivationDialogOpen(true);
       return;
     }
 

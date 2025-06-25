@@ -34,6 +34,10 @@ interface UserContextType {
   deductCredits: () => void;
   isLoggedIn: boolean;
   getPlanByName: (planName: Plan['name']) => Plan | undefined;
+  isActivationDialogOpen: boolean;
+  setActivationDialogOpen: (isOpen: boolean) => void;
+  planToPurchase: Plan['name'] | null;
+  setPlanToPurchase: (planName: Plan['name'] | null) => void;
 }
 
 const defaultUser: User = {
@@ -96,7 +100,7 @@ export const plans: Plan[] = [
     credits: 10000,
     costPerGeneration: 20,
     durationDays: 30,
-    polarLink: 'https://polar.sh/checkout/polar_c_tQZOjzbVYwZhnWg5tdpBcWpYyPzqQZzuvIClV0oUzrC',
+    polarLink: 'https://buy.polar.sh/polar_cl_xkFeAW6Ib01eE9ya6C6jRJVdkpSmHIb9xMnXL0trOi7',
     buttonText: 'Upgrade to Mega',
   },
   {
@@ -122,6 +126,8 @@ export const UserContext = createContext<UserContextType | undefined>(undefined)
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User>(defaultUser);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isActivationDialogOpen, setActivationDialogOpen] = useState(false);
+  const [planToPurchase, setPlanToPurchase] = useState<Plan['name'] | null>(null);
 
   const getUserStorageKey = (email: string) => `userState_${email}`;
 
@@ -292,6 +298,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     deductCredits,
     isLoggedIn: !!user.email,
     getPlanByName,
+    isActivationDialogOpen,
+    setActivationDialogOpen,
+    planToPurchase,
+    setPlanToPurchase,
   };
 
   return (

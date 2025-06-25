@@ -6,6 +6,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Inter, Lora } from 'next/font/google';
 import { UserProvider } from '@/contexts/user-context';
+import { ActivationDialog } from '@/components/activation-dialog';
 
 const headlineFont = Lora({
   subsets: ['latin'],
@@ -39,6 +40,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <Toaster />
+          <ActivationDialog />
         </UserProvider>
       </body>
     </html>

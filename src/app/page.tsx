@@ -13,7 +13,7 @@ import FAQ from '@/components/faq';
 
 export default function Home() {
   const { toast } = useToast();
-  const { user, plans, isLoggedIn, activatePlan } = useUser();
+  const { user, plans, isLoggedIn, activatePlan, setActivationDialogOpen, setPlanToPurchase } = useUser();
   
   const handleScrollToCreate = () => {
     const createSection = document.getElementById('create');
@@ -24,11 +24,8 @@ export default function Home() {
 
   const handlePurchase = (plan: Plan) => {
     if (!isLoggedIn) {
-      toast({
-        title: 'Email Activation Required',
-        description: 'Please activate with your email first before purchasing.',
-        variant: 'destructive',
-      });
+      setPlanToPurchase(plan.name);
+      setActivationDialogOpen(true);
       return;
     }
 
