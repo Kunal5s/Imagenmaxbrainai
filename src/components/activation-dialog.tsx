@@ -18,7 +18,7 @@ import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function ActivationDialog() {
-  const { isActivationDialogOpen, setActivationDialogOpen, login } = useUser();
+  const { isActivationDialogOpen, setActivationDialogOpen, login, planToPurchase, activatePlan, getPlanByName } = useUser();
   const [email, setEmail] = useState('');
   const { toast } = useToast();
 
@@ -32,6 +32,17 @@ export function ActivationDialog() {
     e.preventDefault();
     if (email && email.includes('@')) {
       login(email);
+      // If a plan was selected before logging in, activate it now.
+      if (planToPurchase) {
+          const plan = getPlanByName(planToPurchase);
+          if (plan) {
+            activatePlan(planToPurchase, email);
+             toast({
+              title: `${plan.name} Plan Activated!`,
+              description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
+            });
+          }
+      }
       setActivationDialogOpen(false);
     } else {
       toast({
@@ -49,7 +60,7 @@ export function ActivationDialog() {
           <DialogHeader>
             <DialogTitle>Activate Your Plan</DialogTitle>
             <DialogDescription>
-              Enter the email address you used for your purchase to link it to this browser session.
+              To activate your plan, enter the <strong>exact same email address</strong> you used at checkout.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -68,9 +79,9 @@ export function ActivationDialog() {
               />
             </div>
              <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground bg-accent p-3 rounded-md border">
-                <AlertCircle className="w-8 h-8 flex-shrink-0 text-primary/50" />
+                <AlertCircle className="w-12 h-12 flex-shrink-0 text-primary/50" />
                 <span>
-                  After purchasing a plan, use this form to link your purchase. Your plan and credits are tied to your email.
+                  It is crucial to use the same email you provided during payment. Your plan and credits are permanently tied to that email address and cannot be transferred.
                 </span>
             </div>
           </div>

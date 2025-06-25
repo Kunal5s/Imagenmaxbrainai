@@ -10,7 +10,7 @@ import type { Plan } from '@/contexts/user-context';
 
 export default function PricingPage() {
   const { toast } = useToast();
-  const { user, plans, isLoggedIn, activatePlan, setPlanToPurchase } = useUser();
+  const { user, plans, isLoggedIn, activatePlan, setActivationDialogOpen } = useUser();
 
   const handleScrollTo = (id: string) => {
     const element = document.getElementById(id);
@@ -32,15 +32,13 @@ export default function PricingPage() {
         window.open(plan.polarLink, '_blank');
       }
     } else {
-      // Not logged in. Set the plan to purchase and redirect.
-      setPlanToPurchase(plan.name);
       if (plan.polarLink) {
         window.open(plan.polarLink, '_blank');
       }
       // Give the user instructions.
       toast({
         title: 'Complete Your Purchase',
-        description: "After payment, click 'Activate Plan' in the header and use your email to receive your credits.",
+        description: "After payment, click 'Activate Plan' in the header and enter the *same email address* you used for your purchase to receive your credits.",
         duration: 9000,
       });
     }
