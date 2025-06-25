@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: "visionforge-ai-2fzsc",
   storageBucket: "visionforge-ai-2fzsc.firebasestorage.app",
   messagingSenderId: "873860631451",
-  appId: "1:873860631451:web:eb18891174bfef3c07af3e"
+  appId: "1:873860631451:web:5ff694dfa7c6005f07af3e"
 };
 
 // Initialize Firebase
