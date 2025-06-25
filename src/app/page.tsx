@@ -74,23 +74,10 @@ const features = [
 
 export default function Home() {
   const { toast } = useToast();
-  const { user, plans, activatePlan, isLoggedIn } = useUser();
+  const { user, plans, isLoggedIn } = useUser();
 
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
-  
-  const handlePlanPurchase = (planName: 'Pro' | 'Mega' | 'Booster Pack') => {
-      if (!isLoggedIn) {
-          toast({ title: "Email Activation Required", description: "Please click 'Activate Plan' in the header and enter your email before purchasing.", variant: 'destructive'});
-          return;
-      }
-      activatePlan(planName);
-      if (planName === 'Booster Pack') {
-        toast({ title: "Booster Pack Purchased!", description: "1,000 credits have been added to your account." });
-      } else {
-        toast({ title: "Plan Activated!", description: `You are now on the ${planName} plan.` });
-      }
   };
 
   return (

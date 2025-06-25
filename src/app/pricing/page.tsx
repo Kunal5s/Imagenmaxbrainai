@@ -17,7 +17,6 @@ export default function PricingPage() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     } else {
-      // If not on the home page, navigate and then scroll.
       window.location.href = `/#${id}`;
     }
   };

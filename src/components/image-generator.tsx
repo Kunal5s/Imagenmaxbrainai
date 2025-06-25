@@ -55,13 +55,13 @@ const getAspectRatioForCss = (ratioString: string | undefined): string => {
 };
 
 export default function ImageGenerator() {
-  const { user, deductCredits, getPlanByName } = useUser();
+  const { user, deductCredits, getPlanByName, isLoggedIn } = useUser();
   const { toast } = useToast();
   
   const currentPlan = getPlanByName(user.plan);
   const isProOrMegaPlan = user.plan === 'Pro' || user.plan === 'Mega';
   const costPerGeneration = currentPlan?.costPerGeneration ?? 0;
-  const canGenerate = user.plan === 'Free' ? !user.freeGenerationUsed : user.credits >= costPerGeneration;
+  const canGenerate = isLoggedIn && (user.plan === 'Free' ? !user.freeGenerationUsed : user.credits >= costPerGeneration);
 
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(false);
@@ -125,6 +125,15 @@ export default function ImageGenerator() {
     if (!settings.prompt) {
       toast({ title: 'Prompt Required', description: 'Please enter a prompt to generate images.', variant: 'destructive' });
       return;
+    }
+
+    if (!isLoggedIn) {
+        toast({
+            title: "Activation Required",
+            description: "Please click 'Activate Plan' in the header and enter your email to start generating.",
+            variant: 'destructive',
+        });
+        return;
     }
 
     if (!canGenerate) {
@@ -333,7 +342,7 @@ Please follow these steps exactly:
                       Suggest Prompts
                   </Button>
               </div>
-              {!canGenerate && (
+              {!canGenerate && isLoggedIn && (
                   <div className="text-center text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                      {user.plan === 'Free' ? "You've used your free generation." : "You're out of credits."} 
                      <Button variant="link" asChild className="p-1 h-auto"><Link href="/pricing">Upgrade your plan to continue.</Link></Button>
