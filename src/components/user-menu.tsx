@@ -53,7 +53,7 @@ export function UserMenu() {
   if (!isLoggedIn) {
     return (
       <>
-        <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+        <Button variant="outline" onClick={() => setIsDialogOpen(true)} data-user-menu-trigger>
           Activate Plan
         </Button>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -80,7 +80,7 @@ export function UserMenu() {
                     required
                   />
                 </div>
-                 <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground bg-slate-50 p-3 rounded-md border">
+                 <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground bg-accent p-3 rounded-md border">
                     <AlertCircle className="w-8 h-8 flex-shrink-0 text-primary/50" />
                     <span>
                       After purchasing a plan, use this form to link your purchase to this browser session. Your plan is tied to your email.

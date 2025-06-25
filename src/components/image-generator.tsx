@@ -60,7 +60,7 @@ export default function ImageGenerator() {
   const currentPlan = getPlanByName(user.plan);
   const isProOrMegaPlan = user.plan === 'Pro' || user.plan === 'Mega';
   const costPerGeneration = currentPlan?.costPerGeneration ?? 1;
-  const canGenerate = isLoggedIn && user.credits >= costPerGeneration;
+  const canGenerate = user.credits >= costPerGeneration;
 
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(false);

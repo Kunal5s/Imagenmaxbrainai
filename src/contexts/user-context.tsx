@@ -38,7 +38,7 @@ interface UserContextType {
 const defaultUser: User = {
   email: null,
   plan: 'Free',
-  credits: 0,
+  credits: 5,
   planExpiration: null,
 };
 
@@ -49,7 +49,7 @@ export const plans: Plan[] = [
     priceSuffix: '',
     description: 'For starters and hobbyists.',
     features: [
-      '5 free credits for new users',
+      '5 free credits',
       'Cost: 1 credit / generation',
       'Standard Quality (1080p)',
       'Personal use license',
@@ -124,19 +124,36 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const loadUser = useCallback((email: string | null) => {
     if (!email) {
-      setUser(defaultUser);
+      // Handle non-logged-in user with session storage for free credits
+      const sessionUser = localStorage.getItem('sessionUser');
+      if (sessionUser) {
+        setUser(JSON.parse(sessionUser));
+      } else {
+        setUser(defaultUser);
+      }
       return;
     }
+
+    // Handle logged-in user
     try {
       const storedUser = localStorage.getItem(getUserStorageKey(email));
-      let currentUser = storedUser ? JSON.parse(storedUser) : { ...defaultUser, email, plan: 'Free', credits: 5 };
+      let currentUser: User;
+
+      if (storedUser) {
+        currentUser = JSON.parse(storedUser);
+      } else {
+        // First time this email is used on this browser, give free credits
+        currentUser = { ...defaultUser, email, plan: 'Free', credits: 5 };
+      }
       
+      // Check for expiration
       if (currentUser.planExpiration && isPast(new Date(currentUser.planExpiration))) {
-        currentUser = { ...defaultUser, email: currentUser.email, credits: 0, plan: 'Free' };
         console.log(`Plan for ${email} expired. Resetting to Free plan.`);
+        currentUser = { ...defaultUser, email: currentUser.email, plan: 'Free', credits: 0 };
       }
       
       setUser(currentUser);
+
     } catch (error) {
       console.error("Failed to load user state from localStorage", error);
       setUser({ ...defaultUser, email, plan: 'Free', credits: 5 });
@@ -144,20 +161,26 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // This runs once on mount
     const lastEmail = localStorage.getItem('lastUserEmail');
-    if (lastEmail) {
-      loadUser(lastEmail);
-    } else {
-      setUser(defaultUser);
-    }
+    loadUser(lastEmail);
     setIsInitialized(true);
   }, [loadUser]);
 
   useEffect(() => {
-    if (isInitialized && user.email) {
+    // This runs whenever user state changes
+    if (isInitialized) {
       try {
-        localStorage.setItem(getUserStorageKey(user.email), JSON.stringify(user));
-        localStorage.setItem('lastUserEmail', user.email);
+        if (user.email) {
+          // Logged-in user: save to email-specific key
+          localStorage.setItem(getUserStorageKey(user.email), JSON.stringify(user));
+          localStorage.setItem('lastUserEmail', user.email);
+          localStorage.removeItem('sessionUser'); // Clean up session user data
+        } else {
+           // Not logged-in: save to a temporary session key
+           localStorage.setItem('sessionUser', JSON.stringify(user));
+           localStorage.removeItem('lastUserEmail');
+        }
       } catch (error) {
         console.error("Could not save user state to localStorage", error);
       }
@@ -175,6 +198,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const logout = useCallback(() => {
     if (user.email) {
        localStorage.removeItem('lastUserEmail');
+       // Reset to the default non-logged-in state
        setUser(defaultUser);
     }
   }, [user.email]);
@@ -185,15 +209,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     setUser(currentUser => {
       if (!currentUser.email) {
+        // This case is handled in the UI, but as a safeguard.
         console.error("Cannot activate a plan without a logged-in user.");
         return currentUser;
       }
         
-      const isExpired = currentUser.planExpiration && isPast(new Date(currentUser.planExpiration));
-      const baseCredits = isExpired ? 0 : currentUser.credits;
+      const isExpired = currentUser.planExpiration ? isPast(new Date(currentUser.planExpiration)) : true;
+      
+      // If plan is expired or was free, start with 0, otherwise keep existing credits
+      const baseCredits = (isExpired || currentUser.plan === 'Free') ? 0 : currentUser.credits;
       const newCredits = baseCredits + plan.credits;
-      const newExpiration = plan.durationDays ? add(new Date(), { days: plan.durationDays }).toISOString() : null;
+      
+      const newExpirationDate = add(new Date(), { days: plan.durationDays || 30 });
 
+      // If user buys a Booster pack while on a Pro/Mega plan, just add credits and extend date
+      // but keep the plan name. Otherwise, set the new plan name.
       let newPlanName: Plan['name'] = plan.name;
       if (plan.name === 'Booster Pack' && (currentUser.plan === 'Pro' || currentUser.plan === 'Mega') && !isExpired) {
           newPlanName = currentUser.plan;
@@ -203,7 +233,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           ...currentUser,
           plan: newPlanName,
           credits: newCredits,
-          planExpiration: newExpiration,
+          planExpiration: newExpirationDate.toISOString(),
       };
     });
   }, [getPlanByName]);
@@ -212,7 +242,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (user.credits >= amount) {
           setUser(prev => ({ ...prev, credits: prev.credits - amount }));
       } else {
-          throw new Error("Insufficient credits");
+          console.error("Insufficient credits");
       }
   }, [user.credits]);
 
