@@ -6,21 +6,18 @@ import {googleAI} from '@genkit-ai/googleai';
 // ======================================================================================
 // !! IMPORTANT !!
 // ======================================================================================
-// Your Google AI API key is now read from an environment variable.
-// For local development, set GOOGLE_API_KEY in the .env file.
-//
-// For production deployment on services like Firebase App Hosting,
-// you MUST set GOOGLE_API_KEY as a secret or environment variable in your
-// hosting provider's settings.
+// Your Google AI API key is hardcoded below to ensure successful deployment
+// with Firebase Hosting. For enhanced security in the future, you might consider
+// moving this to a more secure environment variable management system.
 // ======================================================================================
 
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLE_API_KEY = "AIzaSyC0GmkWhdhTe6nW1QMNOcdnixmJSUJNiYs";
 
 if (!GOOGLE_API_KEY) {
   // This error will be thrown during the build process if the key is not set,
   // preventing a broken deployment.
   throw new Error(
-    'GOOGLE_API_KEY is not set in your environment variables. Please set it in your .env file for local development or in your hosting provider for production.'
+    'GOOGLE_API_KEY is not set. Please add it to src/ai/genkit.ts to continue.'
   );
 }
 
