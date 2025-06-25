@@ -54,7 +54,7 @@ const initialPlans = [
       'Dedicated support',
     ],
     buttonText: 'Switch to Mega',
-    polarLink: 'https://buy.polar.sh/polar_cl_uXQb5IyDgK3uZfxBDLb8EWbNFHBfBG2JzuiDs4QCkYi',
+    polarLink: 'https://polar.sh/checkout/polar_c_tQZOjzbVYwZhnWg5tdpBcWpYyPzqQZzuvIClV0oUzrC',
   },
   {
     name: 'Booster Pack',
