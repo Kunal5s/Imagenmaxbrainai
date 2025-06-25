@@ -14,14 +14,25 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useUser } from '@/hooks/use-user-context';
 import { CreditCard, LogOut, User as UserIcon } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function UserMenu() {
   const { user, isLoggedIn, logout, getPlanByName, setActivationDialogOpen } = useUser();
+  const { toast } = useToast();
+
+  const handleActivateClick = () => {
+    toast({
+      title: 'Activate Your Purchase',
+      description: "To unlock your credits, please enter the same email address you used during checkout. If you haven't purchased a plan yet, please visit our pricing page first.",
+      duration: 9000,
+    });
+    setActivationDialogOpen(true);
+  };
 
   if (!isLoggedIn) {
     return (
       <>
-        <Button variant="outline" onClick={() => setActivationDialogOpen(true)} data-user-menu-trigger>
+        <Button variant="outline" onClick={handleActivateClick} data-user-menu-trigger>
           Activate Plan
         </Button>
       </>
