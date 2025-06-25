@@ -47,7 +47,7 @@ export default function PricingPage() {
   return (
     <div className="container mx-auto py-16 md:py-24 px-4 max-w-6xl opacity-0 animate-fadeInUp">
       <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary mb-4">Choose Your Perfect Plan</h1>
+        <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-4">Choose Your Perfect Plan</h1>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
           Simple, transparent pricing for Imagen BrainAi. No hidden fees.
         </p>
@@ -59,10 +59,10 @@ export default function PricingPage() {
           return (
           <Card
             key={plan.name}
-            className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${isCurrentPlan && plan.name !== 'Free' ? 'border-primary border-2 shadow-lg' : ''}`}
+            className={`flex flex-col h-full border hover:border-primary transition-all hover:scale-105 hover:shadow-lg ${isCurrentPlan && plan.name !== 'Free' ? 'border-primary shadow-lg ring-2 ring-primary' : ''}`}
           >
             <CardHeader>
-              <CardTitle className="font-headline text-3xl text-primary">{plan.name}</CardTitle>
+              <CardTitle className="font-headline text-3xl text-foreground">{plan.name}</CardTitle>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">{plan.price}</span>
                 {plan.priceSuffix && (
@@ -95,7 +95,7 @@ export default function PricingPage() {
                 ) : (
                   <Button
                     className="w-full"
-                    variant={'outline'}
+                    variant={ 'default' }
                     onClick={() => handlePurchase(plan)}
                   >
                     {plan.buttonText}

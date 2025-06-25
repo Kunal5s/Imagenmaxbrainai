@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { UserMenu } from './user-menu';
 
 const navLinks = [
-  { href: '/', label: 'Generate Image' },
+  { href: '/#create', label: 'Generate Image' },
   { href: '/about', label: 'About Us' },
   { href: '/contact', label: 'Contact Us' },
   { href: '/pricing', label: 'Pricing' },
@@ -26,17 +26,17 @@ export default function Header() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   return (
-    <header className="py-4 px-4 md:px-8 border-b sticky top-0 bg-background/80 backdrop-blur-sm z-20">
+    <header className="py-4 px-4 md:px-8 border-b">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group" onClick={() => setIsSheetOpen(false)}>
           <BrainCircuit className="w-8 h-8 text-primary" />
-          <h1 className="text-xl font-headline font-bold text-foreground">
-            Imagen Max <span className="text-primary">BrainAi</span>
+          <h1 className="text-xl font-bold text-foreground">
+            Imagen Max BrainAi
           </h1>
         </Link>
         
         <div className="flex items-center gap-4">
-          <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
                 {link.label}

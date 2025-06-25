@@ -4,18 +4,18 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Lora, Inter } from 'next/font/google';
+import { Inter, Lora } from 'next/font/google';
 import { UserProvider } from '@/contexts/user-context';
 
 const headlineFont = Lora({
   subsets: ['latin'],
-  weight: ['400', '700'],
+  display: 'swap',
   variable: '--font-headline',
 });
 
 const bodyFont = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '700'],
+  display: 'swap',
   variable: '--font-body',
 });
 
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${headlineFont.variable} ${bodyFont.variable} font-body bg-background text-foreground antialiased`}>
         <UserProvider>
           <Header />

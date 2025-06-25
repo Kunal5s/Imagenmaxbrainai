@@ -16,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const styles = ["Photographic", "Digital Art", "Anime", "Cartoon", "Comic Book", "Cinematic", "3D Model", "Pixel Art", "Isometric", "Watercolor", "Impressionistic", "Surrealist", "Pop Art", "Minimalist", "Abstract", "Gouache", "Line Art", "Charcoal Sketch", "8-bit", "Woodblock Print", "Vintage Photography", "Double Exposure", "Marker Art"];
 const aspectRatios = ["Square (1:1)", "Portrait (4:5)", "Tall Portrait (9:16)", "Classic Portrait (2:3)", "Landscape (5:4)", "Widescreen (16:9)", "Classic Landscape (3:2)", "Cinematic (2.39:1)", "Ultra Wide (3:1)", "Banner (4:1)"];
@@ -40,7 +41,7 @@ const defaultSettings: GenerationSettings = {
   aspectRatio: 'Square (1:1)',
   mood: 'None',
   lighting: 'None',
-  colorPalette: 'None',
+  colorPalette: 'Default',
   quality: 'Standard (1080p)',
 };
 
@@ -119,7 +120,7 @@ export default function ImageGenerator() {
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!settings.prompt) {
       toast({ title: 'Prompt Required', description: 'Please enter a prompt to generate images.', variant: 'destructive' });
@@ -211,24 +212,27 @@ Please follow these steps exactly:
 
 
   return (
-    <section id="create" className="container mx-auto py-12 px-4">
+    <section id="generator" className="container mx-auto py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <Card className="border shadow-lg overflow-hidden bg-card">
+        <Card className="border shadow-lg overflow-hidden">
           <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-4 text-sm">
-                <span className="font-medium bg-secondary text-secondary-foreground py-1 px-3 rounded">
-                    Plan: {currentPlan?.name ?? 'Free'}
-                </span>
-                <div className="flex items-center gap-2 font-bold text-primary">
-                    <Diamond size={16} />
-                    <span>{user.credits.toLocaleString()} Credits</span>
-                </div>
-            </div>
+            
+            {isLoggedIn && (
+              <div className="flex justify-between items-center mb-4 text-sm bg-secondary p-3 rounded-lg">
+                  <span className="font-medium text-secondary-foreground">
+                      Current Plan: <span className="font-bold">{currentPlan?.name ?? 'Free'}</span>
+                  </span>
+                  <div className="flex items-center gap-2 font-bold text-foreground">
+                      <Diamond size={16} />
+                      <span>{user.credits.toLocaleString()} Credits Remaining</span>
+                  </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label htmlFor="prompt" className="text-lg font-bold">Enter Your Vision</Label>
-                <p className="text-sm text-muted-foreground mb-2">e.g., A futuristic cityscape at sunset, neon lights reflecting on wet streets...</p>
+                <Label htmlFor="prompt" className="text-lg font-bold">Enter your prompt</Label>
+                <p className="text-sm text-muted-foreground mb-2">Describe the image you want to create in detail.</p>
                 <Textarea
                   id="prompt"
                   value={settings.prompt}
@@ -256,60 +260,72 @@ Please follow these steps exactly:
                 </div>
               )}
                 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 pt-4">
-                <div className="space-y-2">
-                  <Label>Artistic Style</Label>
-                  <Select value={settings.style} onValueChange={(v) => handleSettingChange('style', v)} disabled={isLoading}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{styles.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Mood</Label>
-                  <Select value={settings.mood} onValueChange={(v) => handleSettingChange('mood', v)} disabled={isLoading}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{moods.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Lighting</Label>
-                  <Select value={settings.lighting} onValueChange={(v) => handleSettingChange('lighting', v)} disabled={isLoading}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{lightings.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Color Palette</Label>
-                  <Select value={settings.colorPalette} onValueChange={(v) => handleSettingChange('colorPalette', v)} disabled={isLoading}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{colorPalettes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Aspect Ratio</Label>
-                  <Select value={settings.aspectRatio} onValueChange={(v) => handleSettingChange('aspectRatio', v)} disabled={isLoading}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{aspectRatios.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label>Quality</Label>
-                    <Select value={settings.quality} onValueChange={(v) => handleSettingChange('quality', v)} disabled={isLoading}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                      {qualities.map(s => (
-                        <SelectItem
-                          key={s}
-                          value={s}
-                          disabled={s === '4K Quality' && !isProOrMegaPlan}
-                        >
-                          {s}{s === '4K Quality' && !isProOrMegaPlan && ' (Pro/Mega plan required)'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                    </Select>
-                </div>
-              </div>
+              <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2">
+                      <Wand2 className="h-5 w-5" />
+                      <span className="font-bold text-lg">Creative Tools</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-sm"><Paintbrush size={14} /> Artistic Style</Label>
+                        <Select value={settings.style} onValueChange={(v) => handleSettingChange('style', v)} disabled={isLoading}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{styles.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-sm"><Ratio size={14} /> Aspect Ratio</Label>
+                        <Select value={settings.aspectRatio} onValueChange={(v) => handleSettingChange('aspectRatio', v)} disabled={isLoading}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>{aspectRatios.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-sm"><Smile size={14} /> Mood</Label>
+                        <Select value={settings.mood} onValueChange={(v) => handleSettingChange('mood', v)} disabled={isLoading}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{moods.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-sm"><Sun size={14} /> Lighting</Label>
+                        <Select value={settings.lighting} onValueChange={(v) => handleSettingChange('lighting', v)} disabled={isLoading}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{lightings.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-sm"><Palette size={14} /> Color Palette</Label>
+                        <Select value={settings.colorPalette} onValueChange={(v) => handleSettingChange('colorPalette', v)} disabled={isLoading}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{colorPalettes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                          <Label className="flex items-center gap-2 text-sm"><Diamond size={14} /> Quality</Label>
+                          <Select value={settings.quality} onValueChange={(v) => handleSettingChange('quality', v)} disabled={isLoading}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                            {qualities.map(s => (
+                              <SelectItem
+                                key={s}
+                                value={s}
+                                disabled={s === '4K Quality' && !isProOrMegaPlan}
+                              >
+                                {s}{s === '4K Quality' && !isProOrMegaPlan && ' (Pro/Mega plan required)'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                          </Select>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               <div className="flex flex-col sm:flex-row gap-2 pt-2">
                   <Button
@@ -318,7 +334,7 @@ Please follow these steps exactly:
                       className="w-full sm:w-auto flex-grow font-bold hover:scale-105 transition-transform"
                       disabled={isLoading || !canGenerate}
                   >
-                      {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Forging...</> : <><Wand2 className="mr-2 h-4 w-4" />Forge Vision</>}
+                      {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
                   </Button>
                   <Button
                       type="button"
@@ -339,7 +355,7 @@ Please follow these steps exactly:
                   </div>
               )}
                {!isLoggedIn && (
-                  <div className="text-center text-sm text-yellow-500 bg-yellow-500/10 p-3 rounded-md">
+                  <div className="text-center text-sm text-yellow-600 bg-yellow-500/10 p-3 rounded-md">
                      You have {user.credits} free credits. 
                      <Button variant="link" asChild className="p-1 h-auto" onClick={() => document.querySelector<HTMLButtonElement>('[data-user-menu-trigger]')?.click()}>Activate with your email</Button> to start generating.
                   </div>
@@ -376,7 +392,7 @@ Please follow these steps exactly:
               <div
                 key={index}
                 className={cn(
-                  'relative w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg'
+                  'relative w-full overflow-hidden rounded-lg group opacity-0 animate-fadeInUp shadow-lg border'
                 )}
                 style={{
                   animationDelay: `${index * 150}ms`,
@@ -408,7 +424,7 @@ Please follow these steps exactly:
           <div className="text-center text-muted-foreground border-2 border-dashed rounded-lg p-12">
             <ImageIcon className="mx-auto h-16 w-16 mb-4" />
             <h4 className="text-xl font-semibold mb-2">Your generated images will appear here.</h4>
-            <p>Enter a prompt above and click "Forge Vision" to begin.</p>
+            <p>Enter a prompt above and click "Generate" to begin.</p>
           </div>
         )}
       </div>
