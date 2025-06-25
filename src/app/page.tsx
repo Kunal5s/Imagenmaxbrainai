@@ -130,7 +130,7 @@ const initialPlans = [
       'Credits never expire',
     ],
     buttonText: 'Purchase',
-    polarLink: 'https://buy.polar.sh/polar_cl_uXQb5IyDgK3uZfxBDLb8EWbNFHBfBG2JzuiDs4QCkYi',
+    polarLink: 'https://buy.polar.sh/polar_cl_u5vpk1YGAidaW5Lf7PXbDiWqo7jDVyWlv1v0o3G0NAh',
   },
 ];
 
