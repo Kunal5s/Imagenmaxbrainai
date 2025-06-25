@@ -13,7 +13,7 @@ import FAQ from '@/components/faq';
 
 export default function Home() {
   const { toast } = useToast();
-  const { user, plans, isLoggedIn, activatePlan, setActivationDialogOpen, setPlanToPurchase } = useUser();
+  const { user, plans, isLoggedIn, activatePlan, setPlanToPurchase } = useUser();
   
   const handleScrollToCreate = () => {
     const createSection = document.getElementById('create');
@@ -23,21 +23,27 @@ export default function Home() {
   };
 
   const handlePurchase = (plan: Plan) => {
-    if (!isLoggedIn) {
+    if (isLoggedIn) {
+      activatePlan(plan.name);
+      toast({
+          title: `${plan.name} Activated!`,
+          description: `Your new credits have been added to your account.`,
+      });
+      if (plan.polarLink) {
+        window.open(plan.polarLink, '_blank');
+      }
+    } else {
+      // Not logged in. Set the plan to purchase and redirect.
       setPlanToPurchase(plan.name);
-      setActivationDialogOpen(true);
-      return;
-    }
-
-    activatePlan(plan.name);
-
-    toast({
-        title: `${plan.name} Plan Activated!`,
-        description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
-    });
-
-    if (plan.polarLink) {
-      window.open(plan.polarLink, '_blank');
+      if (plan.polarLink) {
+        window.open(plan.polarLink, '_blank');
+      }
+      // Give the user instructions.
+      toast({
+        title: 'Complete Your Purchase',
+        description: "After payment, click 'Activate Plan' in the header and use your email to receive your credits.",
+        duration: 9000,
+      });
     }
   };
 
@@ -109,7 +115,7 @@ export default function Home() {
                   key={plan.name}
                   className={cn(
                     'flex flex-col h-full text-left border hover:border-primary transition-all hover:scale-105 hover:shadow-lg',
-                    isCurrentPlan && plan.name !== 'Free' ? 'border-primary shadow-lg ring-2 ring-primary' : ''
+                    isLoggedIn && isCurrentPlan && plan.name !== 'Free' ? 'border-primary shadow-lg ring-2 ring-primary' : ''
                   )}
                 >
                   <CardHeader>
@@ -131,7 +137,7 @@ export default function Home() {
                     </ul>
                   </CardContent>
                   <CardFooter>
-                    {isCurrentPlan && plan.name !== 'Free' ? (
+                    {isLoggedIn && isCurrentPlan && plan.name !== 'Free' ? (
                       <Button className="w-full" disabled variant={plan.name === 'Pro' ? 'default' : 'outline'}>Current Plan</Button>
                     ) : plan.name === 'Free' ? (
                       <Button className="w-full" variant="outline" onClick={handleScrollToCreate}>

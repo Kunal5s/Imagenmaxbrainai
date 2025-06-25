@@ -55,7 +55,7 @@ const getAspectRatioForCss = (ratioString: string | undefined): string => {
 };
 
 export default function ImageGenerator() {
-  const { user, deductCredits, getPlanByName, isLoggedIn } = useUser();
+  const { user, deductCredits, getPlanByName, isLoggedIn, setActivationDialogOpen } = useUser();
   const { toast } = useToast();
   
   const currentPlan = getPlanByName(user.plan);
@@ -126,20 +126,11 @@ export default function ImageGenerator() {
       toast({ title: 'Prompt Required', description: 'Please enter a prompt to generate images.', variant: 'destructive' });
       return;
     }
-
-    if (!isLoggedIn) {
-        toast({
-            title: "Activation Required",
-            description: "Please click 'Activate Plan' in the header and enter your email to start generating.",
-            variant: 'destructive',
-        });
-        return;
-    }
-
+    
     if (!canGenerate) {
         toast({
             title: 'Out of Credits',
-            description: 'You do not have enough credits. Please purchase a new plan or booster pack.',
+            description: 'You do not have enough credits. Please purchase a new plan or booster pack to continue.',
             variant: 'destructive',
         });
         return;
@@ -349,16 +340,10 @@ Please follow these steps exactly:
                       Suggest Prompts
                   </Button>
               </div>
-              {!canGenerate && isLoggedIn && (
+              {!canGenerate && (
                   <div className="text-center text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                      You're out of credits.
-                     <Button variant="link" asChild className="p-1 h-auto"><Link href="/pricing">Upgrade your plan to continue.</Link></Button>
-                  </div>
-              )}
-               {!isLoggedIn && (
-                  <div className="text-center text-sm text-yellow-600 bg-yellow-500/10 p-3 rounded-md">
-                     You have {user.credits} free credits. 
-                     <Button variant="link" asChild className="p-1 h-auto" onClick={() => document.querySelector<HTMLButtonElement>('[data-user-menu-trigger]')?.click()}>Activate with your email</Button> to start generating.
+                     <Button variant="link" asChild className="p-1 h-auto"><Link href="/pricing">Purchase a plan</Link></Button> to continue generating.
                   </div>
               )}
             </form>

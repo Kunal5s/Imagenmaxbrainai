@@ -18,19 +18,10 @@ import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function ActivationDialog() {
-  const { 
-    isActivationDialogOpen, 
-    setActivationDialogOpen, 
-    login, 
-    planToPurchase,
-    setPlanToPurchase,
-    activatePlan,
-    getPlanByName
-  } = useUser();
+  const { isActivationDialogOpen, setActivationDialogOpen, login } = useUser();
   const [email, setEmail] = useState('');
   const { toast } = useToast();
 
-  // Reset email field when dialog is closed
   useEffect(() => {
     if (!isActivationDialogOpen) {
       setEmail('');
@@ -42,32 +33,6 @@ export function ActivationDialog() {
     if (email && email.includes('@')) {
       login(email);
       setActivationDialogOpen(false);
-      
-      let messageTitle = 'Account Activated';
-      let messageDescription = 'Your account and credits are now linked to this email.';
-      
-      if (planToPurchase) {
-        const plan = getPlanByName(planToPurchase);
-        if (plan) {
-            activatePlan(planToPurchase);
-            
-            toast({
-              title: `${plan.name} Plan Activated!`,
-              description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
-            });
-            
-            if (plan.polarLink) {
-              window.open(plan.polarLink, '_blank');
-            }
-        }
-        setPlanToPurchase(null); // Reset after use
-      } else {
-        toast({
-          title: messageTitle,
-          description: messageDescription,
-        });
-      }
-
     } else {
       toast({
         title: 'Invalid Email',
@@ -82,9 +47,9 @@ export function ActivationDialog() {
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleActivation}>
           <DialogHeader>
-            <DialogTitle>Activate Your Account</DialogTitle>
+            <DialogTitle>Activate Your Plan</DialogTitle>
             <DialogDescription>
-              Enter an email address to activate your account or link a purchase.
+              Enter the email address you used for your purchase to link it to this browser session.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -105,7 +70,7 @@ export function ActivationDialog() {
              <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground bg-accent p-3 rounded-md border">
                 <AlertCircle className="w-8 h-8 flex-shrink-0 text-primary/50" />
                 <span>
-                  After purchasing a plan, use this form to link your purchase to this browser session. Your plan is tied to your email.
+                  After purchasing a plan, use this form to link your purchase. Your plan and credits are tied to your email.
                 </span>
             </div>
           </div>
