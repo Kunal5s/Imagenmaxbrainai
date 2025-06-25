@@ -1,0 +1,8 @@
+specVersion: v1alpha1
+runConfig:
+  cpu: 1
+  memoryMiB: 1024
+buildConfig:
+  installCommand: npm install
+  buildCommand: npm run build
+  startCommand: npm run start
