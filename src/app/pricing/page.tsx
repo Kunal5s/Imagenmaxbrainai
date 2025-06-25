@@ -36,8 +36,7 @@ const plans = [
       'Priority support',
     ],
     buttonText: 'Switch to Pro',
-    buttonLink: '#',
-    polarLink: 'https://buy.polar.sh/YOUR_PRO_PLAN_ID',
+    polarLink: 'https://buy.polar.sh/polar_cl_iQpYIoo3qkW310DMOKN5lXhQo70OHOiLLU5Fp0eZ49f',
   },
   {
     name: 'Mega',
@@ -53,7 +52,6 @@ const plans = [
       'Dedicated support',
     ],
     buttonText: 'Switch to Mega',
-    buttonLink: '#',
     polarLink: 'https://buy.polar.sh/YOUR_MEGA_PLAN_ID',
   },
   {
@@ -67,7 +65,6 @@ const plans = [
       'Credits never expire',
     ],
     buttonText: 'Purchase',
-    buttonLink: '#',
     polarLink: 'https://buy.polar.sh/YOUR_BOOSTER_PACK_ID',
   },
 ];
