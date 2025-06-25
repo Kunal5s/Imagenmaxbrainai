@@ -59,7 +59,9 @@ export default function ImageGenerator() {
   const { toast } = useToast();
   
   const currentPlan = getPlanByName(user.plan);
-  const isProPlan = user.plan === 'Pro' || user.plan === 'Mega';
+  const isProOrMegaPlan = user.plan === 'Pro' || user.plan === 'Mega';
+  const costPerGeneration = currentPlan?.costPerGeneration ?? 0;
+  const canGenerate = user.plan === 'Free' ? !user.freeGenerationUsed : user.credits >= costPerGeneration;
 
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,14 +70,12 @@ export default function ImageGenerator() {
   const [promptSuggestions, setPromptSuggestions] = useState<string[] | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const canGenerate = user.plan === 'Free' ? !user.freeGenerationUsed : user.credits >= (currentPlan?.costPerGeneration ?? 10);
-  
   useEffect(() => {
     try {
       const savedSettings = localStorage.getItem('imageGeneratorSettings');
       if (savedSettings) {
         const parsedSettings = JSON.parse(savedSettings);
-        if (!isProPlan && parsedSettings.quality === '4K Quality') {
+        if (!isProOrMegaPlan && parsedSettings.quality === '4K Quality') {
           parsedSettings.quality = 'Standard (1080p)';
         }
         setSettings(parsedSettings);
@@ -83,7 +83,7 @@ export default function ImageGenerator() {
     } catch (error) {
       console.error("Failed to parse settings from localStorage", error);
     }
-  }, [isProPlan]);
+  }, [isProOrMegaPlan]);
 
   useEffect(() => {
     try {
@@ -94,10 +94,10 @@ export default function ImageGenerator() {
   }, [settings]);
   
   useEffect(() => {
-    if (!isProPlan && settings.quality === '4K Quality') {
+    if (!isProOrMegaPlan && settings.quality === '4K Quality') {
         handleSettingChange('quality', 'Standard (1080p)');
     }
-  }, [isProPlan, settings.quality]);
+  }, [isProOrMegaPlan, settings.quality]);
 
   const handleSettingChange = (key: keyof GenerationSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -129,7 +129,7 @@ export default function ImageGenerator() {
 
     if (!canGenerate) {
         toast({
-            title: 'Out of Credits',
+            title: user.plan === 'Free' ? 'Free Generation Used' : 'Out of Credits',
             description: user.plan === 'Free' ? 'You have used your free generation. Please upgrade to a plan to continue.' : 'You do not have enough credits. Please purchase a new plan or booster pack.',
             variant: 'destructive',
         });
@@ -153,11 +153,19 @@ export default function ImageGenerator() {
       };
       const result = await generateImage(input);
       setGeneratedImages(result.imageDataUris);
-      deductCredits(currentPlan?.costPerGeneration ?? 10);
-      toast({
-          title: 'Success!',
-          description: `${currentPlan?.costPerGeneration ?? 10} credits deducted. You have ${user.credits - (currentPlan?.costPerGeneration ?? 10)} credits remaining.`
-      })
+      deductCredits(costPerGeneration);
+      
+      if (user.plan !== 'Free') {
+        toast({
+            title: 'Success!',
+            description: `${costPerGeneration} credits deducted. You have ${user.credits - costPerGeneration} credits remaining.`
+        })
+      } else {
+         toast({
+            title: 'Free Generation Used!',
+            description: `You can generate more images by purchasing a plan.`
+        })
+      }
     } catch (error) {
       console.error('Failed to generate image', error);
       let errorMessage = 'An unknown error occurred.';
@@ -291,9 +299,9 @@ Please follow these steps exactly:
                               <SelectItem
                                 key={s}
                                 value={s}
-                                disabled={s === '4K Quality' && !isProPlan}
+                                disabled={s === '4K Quality' && !isProOrMegaPlan}
                               >
-                                {s}{s === '4K Quality' && !isProPlan && ' (Pro plan required)'}
+                                {s}{s === '4K Quality' && !isProOrMegaPlan && ' (Pro/Mega plan required)'}
                               </SelectItem>
                             ))}
                           </SelectContent>

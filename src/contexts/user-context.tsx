@@ -70,6 +70,7 @@ export const plans: Plan[] = [
       '10 credits per generation',
       '4K Ultra-High Quality',
       'Commercial use license',
+      'Credits expire after 30 days',
     ],
     credits: 3000,
     costPerGeneration: 10,
@@ -84,12 +85,13 @@ export const plans: Plan[] = [
     description: 'For power users and teams.',
     features: [
       '10,000 credits per month',
-      '10 credits per generation',
+      '20 credits per generation',
       'Lightning-fast speed',
       '4K Ultra-High Quality',
+      'Credits expire after 30 days',
     ],
     credits: 10000,
-    costPerGeneration: 10,
+    costPerGeneration: 20,
     durationDays: 30,
     polarLink: 'https://polar.sh/checkout/polar_c_tQZOjzbVYwZhnWg5tdpBcWpYyPzqQZzuvIClV0oUzrC',
     buttonText: 'Switch to Mega',
@@ -101,11 +103,12 @@ export const plans: Plan[] = [
     description: 'Add-on credit top-up.',
     features: [
       '1,000 credits',
-      '10 credits per generation',
-      'Credits never expire',
+      '30 credits per generation',
+      'Credits expire after 30 days',
     ],
     credits: 1000,
-    costPerGeneration: 10,
+    costPerGeneration: 30,
+    durationDays: 30,
     polarLink: 'https://buy.polar.sh/polar_cl_u5vpk1YGAidaW5Lf7PXbDiWqo7jDVyWlv1v0o3G0NAh',
     buttonText: 'Purchase',
   },
@@ -123,12 +126,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const storedUser = localStorage.getItem('userState');
       let currentUser = storedUser ? JSON.parse(storedUser) : defaultUser;
 
+      // Check for plan expiration
       if (currentUser.planExpiration && isPast(new Date(currentUser.planExpiration))) {
+        // Reset to a free user but keep their email and mark free generation as used
         currentUser = { ...defaultUser, email: currentUser.email, freeGenerationUsed: true };
       }
       
       setUser(currentUser);
     } catch (error) {
+      console.error("Failed to load user state from localStorage", error);
       setUser(defaultUser);
     } finally {
       setIsInitialized(true);
@@ -165,22 +171,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (!plan || plan.name === 'Free') return;
 
     setUser(prevUser => {
-        const isBooster = plan.name === 'Booster Pack';
-        const currentCredits = (prevUser.plan === 'Free' || (prevUser.planExpiration && isPast(new Date(prevUser.planExpiration)))) ? 0 : prevUser.credits;
+        // If previous plan has expired, credits should start from 0 before adding new ones.
+        const baseCredits = (prevUser.planExpiration && isPast(new Date(prevUser.planExpiration))) 
+            ? 0 
+            : prevUser.credits;
         
-        const newCredits = currentCredits + plan.credits;
-        let newExpiration = prevUser.planExpiration;
+        const newCredits = baseCredits + plan.credits;
+        const newExpiration = add(new Date(), { days: plan.durationDays }).toISOString();
 
-        if (!isBooster) {
-             const startDate = (prevUser.planExpiration && !isPast(new Date(prevUser.planExpiration))) ? new Date(prevUser.planExpiration) : new Date();
-             newExpiration = add(startDate, { days: plan.durationDays }).toISOString();
+        let newPlanName = plan.name;
+        // Logic to keep a higher-tier plan if a booster is added.
+        if (plan.name === 'Booster Pack' && (prevUser.plan === 'Pro' || prevUser.plan === 'Mega')) {
+            if (!prevUser.planExpiration || !isPast(new Date(prevUser.planExpiration))) {
+              newPlanName = prevUser.plan;
+            }
         }
 
         return {
             ...prevUser,
-            plan: isBooster && prevUser.plan !== 'Free' ? prevUser.plan : plan.name,
+            plan: newPlanName,
             credits: newCredits,
-            planExpiration: isBooster ? prevUser.planExpiration : newExpiration,
+            planExpiration: newExpiration,
         };
     });
   }, [getPlanByName]);
