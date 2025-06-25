@@ -137,7 +137,7 @@ const initialPlans = [
 
 export default function Home() {
   const { toast } = useToast();
-  const [activePlan, setActivePlan] = useState('Free');
+  const [activePlan, setActivePlan] = useState('Mega');
 
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });

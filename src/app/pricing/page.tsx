@@ -73,7 +73,7 @@ const initialPlans = [
 
 export default function PricingPage() {
   const { toast } = useToast();
-  const [activePlan, setActivePlan] = useState('Free');
+  const [activePlan, setActivePlan] = useState('Mega');
 
   const handlePlanChange = (planName: string) => {
     if (planName === 'Booster Pack') {
