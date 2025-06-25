@@ -4,13 +4,13 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
-import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/hooks/use-user-context';
+import type { Plan } from '@/contexts/user-context';
 
 export default function PricingPage() {
   const { toast } = useToast();
-  const { user, plans, isLoggedIn } = useUser();
+  const { user, plans, isLoggedIn, activatePlan } = useUser();
 
   const handleScrollTo = (id: string) => {
     const element = document.getElementById(id);
@@ -20,6 +20,29 @@ export default function PricingPage() {
       window.location.href = `/#${id}`;
     }
   };
+
+  const handlePurchase = (plan: Plan) => {
+    if (!isLoggedIn) {
+      toast({
+        title: 'Email Activation Required',
+        description: 'Please activate with your email first before purchasing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    activatePlan(plan.name);
+
+    toast({
+        title: `${plan.name} Plan Activated!`,
+        description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
+    });
+
+    if (plan.polarLink) {
+      window.open(plan.polarLink, '_blank');
+    }
+  };
+
 
   return (
     <div className="container mx-auto py-16 md:py-24 px-4 max-w-6xl opacity-0 animate-fadeInUp">
@@ -70,15 +93,13 @@ export default function PricingPage() {
                     {plan.buttonText}
                   </Button>
                 ) : (
-                <Button asChild className="w-full" variant={'outline'}>
-                  <Link href={plan.polarLink!} target="_blank" rel="noopener noreferrer" onClick={() => {
-                        if (!isLoggedIn) {
-                          toast({ title: "Email Activation Required", description: "Please activate with your email first before purchasing.", variant: 'destructive'});
-                        }
-                      }}>
+                  <Button
+                    className="w-full"
+                    variant={'outline'}
+                    onClick={() => handlePurchase(plan)}
+                  >
                     {plan.buttonText}
-                  </Link>
-                </Button>
+                  </Button>
               )}
             </CardFooter>
           </Card>

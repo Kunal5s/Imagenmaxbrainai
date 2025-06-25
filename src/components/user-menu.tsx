@@ -39,7 +39,7 @@ export function UserMenu() {
       setIsDialogOpen(false);
       toast({
         title: 'Account Activated',
-        description: 'Your plans and credits are now linked to this email.',
+        description: 'Your plans and credits are now linked to this email. You can now purchase plans.',
       });
     } else {
       toast({

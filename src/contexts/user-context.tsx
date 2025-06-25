@@ -196,6 +196,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const newExpiration = plan.durationDays ? add(new Date(), { days: plan.durationDays }).toISOString() : null;
 
       let newPlanName = plan.name;
+      // If the current plan is Pro or Mega and a Booster is bought, keep the original plan name but add credits and reset expiration.
       if (plan.name === 'Booster Pack' && (currentUser.plan === 'Pro' || currentUser.plan === 'Mega') && !isExpired) {
           newPlanName = currentUser.plan;
       }

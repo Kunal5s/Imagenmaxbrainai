@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/hooks/use-user-context';
+import type { Plan } from '@/contexts/user-context';
 
 const faqItems = [
     {
@@ -74,10 +75,32 @@ const features = [
 
 export default function Home() {
   const { toast } = useToast();
-  const { user, plans, isLoggedIn } = useUser();
+  const { user, plans, isLoggedIn, activatePlan } = useUser();
 
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  const handlePurchase = (plan: Plan) => {
+    if (!isLoggedIn) {
+      toast({
+        title: 'Email Activation Required',
+        description: 'Please activate with your email first before purchasing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    activatePlan(plan.name);
+
+    toast({
+        title: `${plan.name} Plan Activated!`,
+        description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
+    });
+
+    if (plan.polarLink) {
+      window.open(plan.polarLink, '_blank');
+    }
   };
 
   return (
@@ -180,14 +203,12 @@ export default function Home() {
                         {plan.buttonText}
                       </Button>
                     ) : (
-                      <Button asChild className="w-full" variant="outline">
-                        <Link href={plan.polarLink!} target="_blank" rel="noopener noreferrer" onClick={() => {
-                          if (!isLoggedIn) {
-                            toast({ title: "Email Activation Required", description: "Please activate with your email first before purchasing.", variant: 'destructive'});
-                          }
-                        }}>
-                          {plan.buttonText}
-                        </Link>
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => handlePurchase(plan)}
+                      >
+                        {plan.buttonText}
                       </Button>
                   )}
                 </CardFooter>
