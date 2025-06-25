@@ -22,7 +22,6 @@ export interface User {
   plan: Plan['name'];
   credits: number;
   planExpiration: string | null;
-  freeGenerationUsed: boolean;
 }
 
 interface UserContextType {
@@ -41,7 +40,6 @@ const defaultUser: User = {
   plan: 'Free',
   credits: 0,
   planExpiration: null,
-  freeGenerationUsed: false,
 };
 
 export const plans: Plan[] = [
@@ -51,12 +49,13 @@ export const plans: Plan[] = [
     priceSuffix: '',
     description: 'For starters and hobbyists.',
     features: [
-      '1 free image generation (4 images)',
+      '5 free credits for new users',
+      'Cost: 1 credit / generation',
       'Standard Quality (1080p)',
       'Personal use license',
     ],
-    credits: 0,
-    costPerGeneration: 0,
+    credits: 5,
+    costPerGeneration: 1,
     polarLink: null,
     buttonText: 'Start Generating',
   },
@@ -130,17 +129,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
     try {
       const storedUser = localStorage.getItem(getUserStorageKey(email));
-      let currentUser = storedUser ? JSON.parse(storedUser) : { ...defaultUser, email };
+      let currentUser = storedUser ? JSON.parse(storedUser) : { ...defaultUser, email, plan: 'Free', credits: 5 };
       
       if (currentUser.planExpiration && isPast(new Date(currentUser.planExpiration))) {
-        currentUser = { ...defaultUser, email: currentUser.email, freeGenerationUsed: true };
+        currentUser = { ...defaultUser, email: currentUser.email, credits: 0, plan: 'Free' };
         console.log(`Plan for ${email} expired. Resetting to Free plan.`);
       }
       
       setUser(currentUser);
     } catch (error) {
       console.error("Failed to load user state from localStorage", error);
-      setUser({ ...defaultUser, email });
+      setUser({ ...defaultUser, email, plan: 'Free', credits: 5 });
     }
   }, []);
 
@@ -195,8 +194,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const newCredits = baseCredits + plan.credits;
       const newExpiration = plan.durationDays ? add(new Date(), { days: plan.durationDays }).toISOString() : null;
 
-      let newPlanName = plan.name;
-      // If the current plan is Pro or Mega and a Booster is bought, keep the original plan name but add credits and reset expiration.
+      let newPlanName: Plan['name'] = plan.name;
       if (plan.name === 'Booster Pack' && (currentUser.plan === 'Pro' || currentUser.plan === 'Mega') && !isExpired) {
           newPlanName = currentUser.plan;
       }
@@ -206,22 +204,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           plan: newPlanName,
           credits: newCredits,
           planExpiration: newExpiration,
-          freeGenerationUsed: true, // Purchasing any plan counts as using the free tier.
       };
     });
   }, [getPlanByName]);
   
   const deductCredits = useCallback((amount: number) => {
-      if (user.plan === 'Free' && !user.freeGenerationUsed) {
-          setUser(prev => ({ ...prev, freeGenerationUsed: true }));
-          return;
-      }
       if (user.credits >= amount) {
           setUser(prev => ({ ...prev, credits: prev.credits - amount }));
       } else {
           throw new Error("Insufficient credits");
       }
-  }, [user]);
+  }, [user.credits]);
 
   const value = {
     user,
