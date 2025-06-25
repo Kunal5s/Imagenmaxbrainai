@@ -22,6 +22,7 @@ export interface User {
   plan: Plan['name'];
   credits: number;
   planExpiration: string | null;
+  lastCreditReset?: string | null; // YYYY-MM-DD
 }
 
 interface UserContextType {
@@ -40,6 +41,7 @@ const defaultUser: User = {
   plan: 'Free',
   credits: 10,
   planExpiration: null,
+  lastCreditReset: null,
 };
 
 export const plans: Plan[] = [
@@ -124,13 +126,24 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const getUserStorageKey = (email: string) => `userState_${email}`;
 
   const loadUser = useCallback((email: string | null) => {
+    const today = new Date().toISOString().split('T')[0];
+
     if (!email) {
       // Handle non-logged-in user with session storage for free credits
       const sessionUser = localStorage.getItem('sessionUser');
       if (sessionUser) {
-        setUser(JSON.parse(sessionUser));
+        const parsedUser: User = JSON.parse(sessionUser);
+        
+        // Daily credit reset for free users
+        if (parsedUser.plan === 'Free' && parsedUser.lastCreditReset !== today) {
+            parsedUser.credits = 10;
+            parsedUser.lastCreditReset = today;
+        }
+        
+        setUser(parsedUser);
       } else {
-        setUser(defaultUser);
+        // First visit ever for a non-logged in user
+        setUser({ ...defaultUser, lastCreditReset: today });
       }
       return;
     }
@@ -143,21 +156,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (storedUser) {
         currentUser = JSON.parse(storedUser);
       } else {
-        // First time this email is used on this browser, give free credits
-        currentUser = { ...defaultUser, email, plan: 'Free', credits: 10 };
+        // First time this email is used on this browser
+        currentUser = { ...defaultUser, email, plan: 'Free', credits: 10, lastCreditReset: today };
       }
       
-      // Check for expiration
-      if (currentUser.plan !== 'Booster Pack' && currentUser.planExpiration && isPast(new Date(currentUser.planExpiration))) {
+      // Check for paid plan expiration
+      if (currentUser.plan !== 'Free' && currentUser.plan !== 'Booster Pack' && currentUser.planExpiration && isPast(new Date(currentUser.planExpiration))) {
         console.log(`Plan for ${email} expired. Resetting to Free plan.`);
-        currentUser = { ...defaultUser, email: currentUser.email, plan: 'Free', credits: 0 };
+        currentUser = { ...defaultUser, email: currentUser.email, plan: 'Free', credits: 10, lastCreditReset: today };
+      }
+
+      // Daily credit reset for logged-in free users
+      if (currentUser.plan === 'Free' && currentUser.lastCreditReset !== today) {
+          currentUser.credits = 10;
+          currentUser.lastCreditReset = today;
       }
       
       setUser(currentUser);
 
     } catch (error) {
       console.error("Failed to load user state from localStorage", error);
-      setUser({ ...defaultUser, email, plan: 'Free', credits: 10 });
+      setUser({ ...defaultUser, email, plan: 'Free', credits: 10, lastCreditReset: today });
     }
   }, []);
 
@@ -199,8 +218,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const logout = useCallback(() => {
     if (user.email) {
        localStorage.removeItem('lastUserEmail');
-       // Reset to the default non-logged-in state
-       setUser(defaultUser);
+       // Reset to the default non-logged-in state for a new session
+       const today = new Date().toISOString().split('T')[0];
+       setUser({ ...defaultUser, lastCreditReset: today });
     }
   }, [user.email]);
 
