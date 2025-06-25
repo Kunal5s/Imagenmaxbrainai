@@ -167,6 +167,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 variant: 'destructive',
             });
             storedUser = { ...defaultUser, email, lastCreditReset: today };
+        } else if (storedUser.plan === 'Free' && storedUser.lastCreditReset !== today) {
+            storedUser.credits = 10;
+            storedUser.lastCreditReset = today;
         }
         setUser(storedUser);
       } else {
@@ -201,6 +204,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, isInitialized]);
 
+  const login = useCallback((email: string) => {
+    loadUser(email);
+  }, [loadUser]);
+
   const activatePlan = useCallback((planName: Plan['name'], emailOverride?: string) => {
     const plan = getPlanByName(planName);
     if (!plan || plan.name === 'Free') return;
@@ -209,6 +216,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (!targetEmail) {
         setPlanToPurchase(planName);
         setActivationDialogOpen(true);
+        toast({
+            title: 'Complete Your Purchase',
+            description: "After payment, please enter the email address you used during checkout to activate your plan.",
+            duration: 9000,
+        });
         return;
     }
 
@@ -216,32 +228,42 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const storedUserStr = localStorage.getItem(storageKey);
     let currentUserState: User = storedUserStr ? JSON.parse(storedUserStr) : { ...defaultUser, email: targetEmail };
 
-    const isExpired = currentUserState.planExpiration ? isPast(new Date(currentUserState.planExpiration)) : true;
-    const creditsBeforePurchase = (isExpired && currentUserState.plan !== 'Free') ? 0 : currentUserState.credits;
-    const newCredits = creditsBeforePurchase + plan.credits;
+    if (currentUserState.plan !== 'Free' && currentUserState.planExpiration && isPast(new Date(currentUserState.planExpiration))) {
+        currentUserState = { ...defaultUser, email: targetEmail, lastCreditReset: new Date().toISOString().split('T')[0] };
+    }
+
+    const newCredits = currentUserState.credits + plan.credits;
     const newExpiration = add(new Date(), { days: plan.durationDays || 30 }).toISOString();
     
     let newPlanName = currentUserState.plan;
     if (plan.name === 'Pro' || plan.name === 'Mega') {
         newPlanName = plan.name;
-    } else if (isExpired || newPlanName === 'Free') {
-        newPlanName = 'Booster Pack';
     }
 
     const updatedUser: User = {
         ...currentUserState,
+        email: targetEmail,
         plan: newPlanName,
         credits: newCredits,
         planExpiration: newExpiration,
     };
+    
+    localStorage.setItem(storageKey, JSON.stringify(updatedUser));
+    
+    if (targetEmail === user.email) {
+        setUser(updatedUser);
+    } else {
+        login(targetEmail);
+    }
 
-    setUser(updatedUser);
     setPlanToPurchase(null);
-  }, [getPlanByName, user.email]);
+    setActivationDialogOpen(false);
 
-  const login = useCallback((email: string) => {
-    loadUser(email);
-  }, [loadUser]);
+    toast({
+      title: `${plan.name} Activated!`,
+      description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
+    });
+  }, [getPlanByName, user.email, toast, login]);
 
   const logout = useCallback(() => {
     if (user.email) {

@@ -22,8 +22,8 @@ export function UserMenu() {
 
   const handleActivateClick = () => {
     toast({
-      title: 'Activate Your Purchase',
-      description: "To unlock your credits, please enter the same email address you used during checkout. If you haven't purchased a plan yet, please visit our pricing page first.",
+      title: 'Activate a Purchase or Login',
+      description: "Enter the email address used at checkout to apply your purchase or access an existing account.",
       duration: 9000,
     });
     setActivationDialogOpen(true);

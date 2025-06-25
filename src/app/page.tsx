@@ -23,26 +23,12 @@ export default function Home() {
   };
 
   const handlePurchase = (plan: Plan) => {
-    if (isLoggedIn) {
-      activatePlan(plan.name);
-      toast({
-          title: `${plan.name} Activated!`,
-          description: `Your new credits have been added to your account.`,
-      });
-      if (plan.polarLink) {
-        window.open(plan.polarLink, '_blank');
-      }
-    } else {
-      // Not logged in.
-      if (plan.polarLink) {
-        window.open(plan.polarLink, '_blank');
-      }
-      // Give the user instructions.
-      toast({
-        title: 'Complete Your Purchase',
-        description: "After payment, click 'Activate Plan' in the header and enter the *same email address* you used for your purchase to receive your credits.",
-        duration: 9000,
-      });
+    // This now works for both logged-in and new users.
+    // activatePlan will handle the logic of opening the dialog if the user is not logged in.
+    activatePlan(plan.name);
+
+    if (plan.polarLink) {
+      window.open(plan.polarLink, '_blank');
     }
   };
 

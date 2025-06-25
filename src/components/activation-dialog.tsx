@@ -18,7 +18,7 @@ import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function ActivationDialog() {
-  const { isActivationDialogOpen, setActivationDialogOpen, login, planToPurchase, activatePlan, getPlanByName } = useUser();
+  const { isActivationDialogOpen, setActivationDialogOpen, login, planToPurchase, activatePlan } = useUser();
   const [email, setEmail] = useState('');
   const { toast } = useToast();
 
@@ -30,25 +30,25 @@ export function ActivationDialog() {
 
   const handleActivation = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && email.includes('@')) {
-      login(email);
-      // If a plan was selected before logging in, activate it now.
-      if (planToPurchase) {
-          const plan = getPlanByName(planToPurchase);
-          if (plan) {
-            activatePlan(planToPurchase, email);
-             toast({
-              title: `${plan.name} Plan Activated!`,
-              description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
-            });
-          }
-      }
-      setActivationDialogOpen(false);
-    } else {
-      toast({
+    if (!email || !email.includes('@')) {
+       toast({
         title: 'Invalid Email',
         description: 'Please enter a valid email address.',
         variant: 'destructive',
+      });
+      return;
+    }
+
+    if (planToPurchase) {
+      // If a purchase flow was started, activate the specific plan for the entered email.
+      activatePlan(planToPurchase, email);
+    } else {
+      // If just logging in without a specific plan purchase in mind.
+      login(email);
+      setActivationDialogOpen(false);
+      toast({
+        title: 'Logged In',
+        description: 'Your account has been loaded successfully.',
       });
     }
   };
@@ -58,9 +58,9 @@ export function ActivationDialog() {
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleActivation}>
           <DialogHeader>
-            <DialogTitle>Activate Your Plan</DialogTitle>
+            <DialogTitle>{planToPurchase ? `Activate ${planToPurchase}` : 'Access Your Account'}</DialogTitle>
             <DialogDescription>
-              To activate your plan, enter the <strong>exact same email address</strong> you used at checkout.
+              To activate your purchase or access your account, enter the <strong>exact same email address</strong> you used at checkout.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -86,7 +86,7 @@ export function ActivationDialog() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Activate</Button>
+            <Button type="submit">Activate &amp; Login</Button>
           </DialogFooter>
         </form>
       </DialogContent>
