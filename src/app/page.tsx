@@ -98,7 +98,7 @@ const plans = [
       'Commercial use license',
       'Priority support',
     ],
-    buttonText: 'Upgrade to Pro',
+    buttonText: 'Current Plan',
     buttonLink: '#',
     highlighted: true,
   },
@@ -228,9 +228,15 @@ export default function Home() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild className="w-full" variant={plan.highlighted ? 'default' : 'outline'}>
-                    <Link href={plan.buttonLink}>{plan.buttonText}</Link>
-                  </Button>
+                  {plan.highlighted ? (
+                    <Button className="w-full" variant="default" disabled>
+                      {plan.buttonText}
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full" variant={'outline'}>
+                      <Link href={plan.buttonLink}>{plan.buttonText}</Link>
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}
