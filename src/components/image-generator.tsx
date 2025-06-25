@@ -167,7 +167,7 @@ export default function ImageGenerator() {
         errorMessage = error.message;
       }
       
-      if (errorMessage.includes('API key') || errorMessage.includes('safety policies')) {
+      if (/API key|permission|denied|billing|quota|safety/i.test(errorMessage)) {
           setApiError(
 `Image generation failed. This is likely due to an issue with your Google AI API Key.
 
@@ -179,6 +179,8 @@ Please check the following:
 **For production deployment (like on Netlify):**
 It is highly recommended to set the API key as an environment variable named \`GOOGLE_API_KEY\` in your hosting provider's settings instead of leaving it in the code.`
           );
+      } else {
+        setApiError(null);
       }
 
       toast({
