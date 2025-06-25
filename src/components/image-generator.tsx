@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush, Diamond } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush, Diamond, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 
@@ -61,6 +61,7 @@ export default function ImageGenerator() {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[] | null>(null);
   const [promptSuggestions, setPromptSuggestions] = useState<string[] | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -114,6 +115,7 @@ export default function ImageGenerator() {
     setIsLoading(true);
     setGeneratedImages(null);
     setPromptSuggestions(null);
+    setApiError(null);
 
     try {
       const input: GenerateImageInput = {
@@ -133,6 +135,23 @@ export default function ImageGenerator() {
       if (error instanceof Error) {
         errorMessage = error.message;
       }
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('safety policies')) {
+          setApiError(
+`Image generation failed. This is likely because the GOOGLE_API_KEY is not set correctly in your live application's settings.
+
+Please follow these steps exactly:
+1.  Go to your Firebase project: App Hosting > Backend: imagenmaxbrainai.
+2.  Click the Settings tab.
+3.  **SCROLL DOWN** on that page until you find the section titled **"Environment variables"**.
+4.  Click the **[+ Add variable]** button.
+5.  For **Name**, enter: \`GOOGLE_API_KEY\`
+6.  For **Value**, paste your Google AI (Gemini) API key.
+7.  Click **Save**.
+8.  Return to Firebase Studio and **Publish** your application again.`
+          );
+      }
+
       toast({
         title: 'Image Generation Failed',
         description: `Could not generate images. ${errorMessage}`,
@@ -323,6 +342,19 @@ export default function ImageGenerator() {
       </div>
 
       <div className="mt-12">
+        {apiError && (
+            <Card className="mb-8 border-destructive bg-destructive/10">
+                <CardContent className="p-6 text-destructive">
+                    <div className="flex items-start gap-4">
+                        <AlertTriangle className="h-6 w-6 flex-shrink-0 mt-1" />
+                        <div>
+                            <h3 className="font-bold text-lg mb-2">Action Required: Set API Key</h3>
+                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{apiError}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )}
         {isLoading && (
           <div className="flex flex-col items-center gap-4 text-muted-foreground">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -364,7 +396,7 @@ export default function ImageGenerator() {
             ))}
           </div>
         )}
-        {!isLoading && !generatedImages && (
+        {!isLoading && !generatedImages && !apiError && (
           <div className="text-center text-muted-foreground border-2 border-dashed rounded-lg p-12">
             <ImageIcon className="mx-auto h-16 w-16 mb-4" />
             <h4 className="text-xl font-semibold mb-2">Your generated images will appear here.</h4>
