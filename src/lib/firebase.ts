@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -5,12 +6,12 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 
 // Your web app's Firebase configuration is now hardcoded for direct deployment.
 const firebaseConfig = {
-  apiKey: "AIzaSyDFDjcsIp_73LmYGMRvC31fNWP_nX0o238",
-  authDomain: "visionforge-ai-2fzsc.firebaseapp.com",
-  projectId: "visionforge-ai-2fzsc",
-  storageBucket: "visionforge-ai-2fzsc.appspot.com",
-  messagingSenderId: "873860631451",
-  appId: "1:873860631451:web:5ff694dfa7c6005f07af3e"
+  apiKey: "AIzaSyDLw0k0QwcRlSXTaBQDJvGqZJL3NKLhtNM",
+  authDomain: "imagenmax-brain-ai.firebaseapp.com",
+  projectId: "imagenmax-brain-ai",
+  storageBucket: "imagenmax-brain-ai.appspot.com",
+  messagingSenderId: "935856133474",
+  appId: "1:935856133474:web:aa9ec60c401e97d99c483b"
 };
 
 

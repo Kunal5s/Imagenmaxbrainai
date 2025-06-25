@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user-context';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
