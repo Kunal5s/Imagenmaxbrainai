@@ -207,17 +207,15 @@ It is highly recommended to set the API key as an environment variable named \`G
         <Card className="border shadow-lg overflow-hidden">
           <CardContent className="p-6">
             
-            {isLoggedIn && (
-              <div className="flex justify-between items-center mb-4 text-sm bg-primary/10 p-3 rounded-lg">
-                  <span className="font-medium text-foreground">
-                      Plan: <span className="font-bold">{currentPlan?.name ?? 'Free'}</span>
-                  </span>
-                  <div className="flex items-center gap-2 font-bold text-primary">
-                      <Diamond size={16} />
-                      <span>{user.credits.toLocaleString()} Credits</span>
-                  </div>
-              </div>
-            )}
+            <div className="flex justify-between items-center mb-4 text-sm bg-primary/10 p-3 rounded-lg">
+                <span className="font-medium text-foreground">
+                    Plan: <span className="font-bold">{currentPlan?.name ?? 'Free'}</span>
+                </span>
+                <div className="flex items-center gap-2 font-bold text-primary">
+                    <Diamond size={16} />
+                    <span>{user.credits.toLocaleString()} Credits</span>
+                </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
