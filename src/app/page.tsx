@@ -140,6 +140,9 @@ export default function Home() {
   const handleScrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
+  
+  const activePlan = plans.find((plan) => plan.highlighted);
+  const isProPlan = activePlan?.name === 'Pro' || activePlan?.name === 'Mega';
 
   return (
     <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
@@ -163,7 +166,7 @@ export default function Home() {
       </section>
 
       <div className="opacity-0 animate-fadeInUp" style={{animationDelay: '400ms'}}>
-        <ImageGenerator />
+        <ImageGenerator isProPlan={isProPlan} />
       </div>
 
       <section className="py-24 lg:py-32 bg-slate-50">

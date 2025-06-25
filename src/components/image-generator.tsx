@@ -55,7 +55,7 @@ const getAspectRatioForCss = (ratioString: string | undefined): string => {
 };
 
 
-export default function ImageGenerator() {
+export default function ImageGenerator({ isProPlan = false }: { isProPlan?: boolean }) {
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -69,12 +69,16 @@ export default function ImageGenerator() {
     try {
       const savedSettings = localStorage.getItem('imageGeneratorSettings');
       if (savedSettings) {
-        setSettings(JSON.parse(savedSettings));
+        const parsedSettings = JSON.parse(savedSettings);
+        if (!isProPlan && parsedSettings.quality === '4K Quality') {
+          parsedSettings.quality = 'Standard (1080p)';
+        }
+        setSettings(parsedSettings);
       }
     } catch (error) {
       console.error("Failed to parse settings from localStorage", error);
     }
-  }, []);
+  }, [isProPlan]);
 
   useEffect(() => {
     try {
@@ -307,7 +311,17 @@ Please follow these steps exactly:
                          <Label><Diamond className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Quality</Label>
                          <Select value={settings.quality} onValueChange={(v) => handleSettingChange('quality', v)} disabled={isLoading}>
                            <SelectTrigger><SelectValue /></SelectTrigger>
-                           <SelectContent>{qualities.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                           <SelectContent>
+                            {qualities.map(s => (
+                              <SelectItem
+                                key={s}
+                                value={s}
+                                disabled={s === '4K Quality' && !isProPlan}
+                              >
+                                {s}{s === '4K Quality' && !isProPlan && ' (Pro only)'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                          </Select>
                       </div>
                     </div>
