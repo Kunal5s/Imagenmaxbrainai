@@ -9,6 +9,7 @@ import { useUser } from '@/hooks/use-user-context';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from "@/lib/utils";
+import FAQ from '@/components/faq';
 
 export default function Home() {
   const { toast } = useToast();
@@ -151,6 +152,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <FAQ />
     </div>
   );
 }
