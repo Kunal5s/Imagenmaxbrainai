@@ -169,17 +169,15 @@ export default function ImageGenerator() {
       
       if (errorMessage.includes('API key') || errorMessage.includes('safety policies')) {
           setApiError(
-`Image generation failed. This is likely because the GOOGLE_API_KEY is not set correctly in your live application's settings.
+`Image generation failed. This is likely due to an issue with your Google AI API Key.
 
-Please follow these steps exactly:
-1.  Go to your Firebase project: App Hosting > Backend: imagenmaxbrainai.
-2.  Click the Settings tab.
-3.  **SCROLL DOWN** on that page until you find the section titled **"Environment variables"**.
-4.  Click the **[+ Add variable]** button.
-5.  For **Name**, enter: \`GOOGLE_API_KEY\`
-6.  For **Value**, paste your Google AI (Gemini) API key.
-7.  Click **Save**.
-8.  Return to Firebase Studio and **Publish** your application again.`
+Please check the following:
+1.  The API key in the code (\`src/ai/genkit.ts\`) is correct and active.
+2.  Your Google Cloud project associated with the key has billing enabled.
+3.  Your prompt does not violate AI safety policies.
+
+**For production deployment (like on Netlify):**
+It is highly recommended to set the API key as an environment variable named \`GOOGLE_API_KEY\` in your hosting provider's settings instead of leaving it in the code.`
           );
       }
 
