@@ -167,25 +167,30 @@ export default function ImageGenerator() {
         let error: string | undefined = undefined;
 
         if (settings.model === 'pollinations') {
+            const ratioMatch = settings.aspectRatio.match(/\((.*?)\)/);
+            const aspectRatioParam = ratioMatch ? ratioMatch[1] : '1:1';
+
             const promptParts = [
                 settings.prompt,
                 settings.style,
                 settings.mood,
                 settings.lighting,
                 settings.colorPalette,
-                `aspect ratio ${settings.aspectRatio}`,
-                settings.quality === '4K Quality' ? '4K, ultra-high resolution, photorealistic' : 'high quality, detailed',
-                'no watermark, no text, no logos'
+                `ar ${aspectRatioParam}`,
+                settings.quality === '4K Quality' ? '4K, ultra high resolution, photorealistic, sharp focus' : 'high quality, detailed, sharp focus',
+                'no watermark, no logo, no text, no signature'
             ];
             const finalPrompt = promptParts.filter(p => p && p !== 'None' && p !== 'Default').join(', ');
 
-            const generationPromises = Array(4).fill(null).map(() => 
-                fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`)
+            const generationPromises = Array(4).fill(null).map(() => {
+                const seed = Math.floor(Math.random() * 10000000);
+                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?seed=${seed}`;
+                return fetch(url)
                     .then(res => {
                         if (!res.ok) throw new Error(`Pollinations API returned status ${res.status}`);
                         return res.url;
                     })
-            );
+            });
             
             const results = await Promise.allSettled(generationPromises);
             
