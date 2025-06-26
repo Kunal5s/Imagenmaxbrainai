@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush, Diamond, AlertTriangle } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush, Diamond, AlertTriangle, BrainCircuit } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 import { useUser } from '@/hooks/use-user-context';
@@ -24,6 +24,10 @@ const moods = ["None", "Cyberpunk", "Dreamy", "Gothic", "Kawaii", "Steampunk", "
 const lightings = ["None", "Bright", "Neon", "Misty", "Ethereal", "Sunset", "Golden Hour", "Blue Hour", "Volumetric", "Soft", "Hard", "Rembrandt", "Backlight"];
 const colorPalettes = ["None", "Default", "Cool Tones", "Warm Tones", "Pastel Dreams", "Indigo Night", "Infrared Vision", "Monochromatic", "Earthy Tones", "Vibrant Neon", "Vintage Sepia", "Synthwave"];
 const qualities = ["Standard (1080p)", "4K Quality"];
+const models = [
+    { id: 'googleai/gemini-2.0-flash-preview-image-generation', name: 'Gemini 2.0 Flash (Fast)' },
+    { id: 'googleai/imagen-3.0-generate-preview-0611', name: 'Google Imagen 3 (Highest Quality)', premium: true },
+];
 
 interface GenerationSettings {
   prompt: string;
@@ -33,6 +37,7 @@ interface GenerationSettings {
   lighting: string;
   colorPalette: string;
   quality: string;
+  model: string;
 }
 
 const defaultSettings: GenerationSettings = {
@@ -43,6 +48,7 @@ const defaultSettings: GenerationSettings = {
   lighting: 'None',
   colorPalette: 'Default',
   quality: 'Standard (1080p)',
+  model: models[0].id,
 };
 
 const getAspectRatioForCss = (ratioString: string | undefined): string => {
@@ -75,8 +81,14 @@ export default function ImageGenerator() {
       const savedSettings = localStorage.getItem('imageGeneratorSettings');
       if (savedSettings) {
         const parsedSettings = JSON.parse(savedSettings);
-        if (!isProOrMegaPlan && parsedSettings.quality === '4K Quality') {
-          parsedSettings.quality = 'Standard (1080p)';
+        if (!isProOrMegaPlan) {
+            if (parsedSettings.quality === '4K Quality') {
+              parsedSettings.quality = 'Standard (1080p)';
+            }
+            const selectedModel = models.find(m => m.id === parsedSettings.model);
+            if (selectedModel?.premium) {
+              parsedSettings.model = models[0].id;
+            }
         }
         setSettings(parsedSettings);
       }
@@ -94,10 +106,16 @@ export default function ImageGenerator() {
   }, [settings]);
   
   useEffect(() => {
-    if (!isProOrMegaPlan && settings.quality === '4K Quality') {
-        handleSettingChange('quality', 'Standard (1080p)');
+    if (!isProOrMegaPlan) {
+        if (settings.quality === '4K Quality') {
+            handleSettingChange('quality', 'Standard (1080p)');
+        }
+        const selectedModel = models.find(m => m.id === settings.model);
+        if (selectedModel?.premium) {
+            handleSettingChange('model', models[0].id);
+        }
     }
-  }, [isProOrMegaPlan, settings.quality]);
+  }, [isProOrMegaPlan, settings.quality, settings.model]);
 
   const handleSettingChange = (key: keyof GenerationSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -151,6 +169,7 @@ export default function ImageGenerator() {
         lighting: settings.lighting === 'None' ? undefined : settings.lighting,
         colorPalette: settings.colorPalette === 'None' || settings.colorPalette === 'Default' ? undefined : settings.colorPalette,
         quality: settings.quality,
+        model: settings.model,
       };
       
       const result = await generateImage(input);
@@ -265,6 +284,23 @@ It is highly recommended to set the API key as an environment variable named \`G
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4">
+                    <div className="space-y-2 mb-6">
+                        <Label className="flex items-center gap-2 text-sm"><BrainCircuit size={14} /> AI Model</Label>
+                        <Select value={settings.model} onValueChange={(v) => handleSettingChange('model', v)} disabled={isLoading}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {models.map(m => (
+                                <SelectItem
+                                    key={m.id}
+                                    value={m.id}
+                                    disabled={m.premium && !isProOrMegaPlan}
+                                >
+                                    {m.name}{m.premium && !isProOrMegaPlan && ' (Pro/Mega plan required)'}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
                       <div className="space-y-2">
                         <Label className="flex items-center gap-2 text-sm"><Paintbrush size={14} /> Artistic Style</Label>

@@ -19,6 +19,7 @@ const GenerateImageInputSchema = z.object({
   lighting: z.string().optional().describe('The lighting style of the image.'),
   colorPalette: z.string().optional().describe('A predefined color palette for the image.'),
   quality: z.string().optional().describe('The desired image quality.'),
+  model: z.string().optional().describe('The AI model to use for generation.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -70,11 +71,12 @@ const generateImageFlow = ai.defineFlow(
     }
     
     const fullPrompt = promptParts.join(' ');
-
+    
+    const modelToUse = input.model || 'googleai/gemini-2.0-flash-preview-image-generation';
 
     const generationPromises = Array(4).fill(null).map(() => 
         ai.generate({
-            model: 'googleai/gemini-2.0-flash-preview-image-generation',
+            model: modelToUse,
             prompt: fullPrompt,
             config: {
                 responseModalities: ['TEXT', 'IMAGE'],
