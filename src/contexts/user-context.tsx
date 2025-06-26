@@ -213,63 +213,65 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const plan = getPlanByName(planName);
     if (!plan || plan.name === 'Free') return;
 
-    const targetEmail = emailOverride || user.email;
-    if (!targetEmail) {
-        setPlanToPurchase(planName);
-        setActivationDialogOpen(true);
-        toast({
-            title: 'Complete Your Purchase',
-            description: "After payment, please enter the email address you used during checkout to activate your plan.",
-            duration: 9000,
-        });
-        return;
-    }
+    if (emailOverride) {
+      const targetEmail = emailOverride;
+      
+      const storageKey = getUserStorageKey(targetEmail);
+      const storedUserStr = localStorage.getItem(storageKey);
+      let currentUserState: User = { ...defaultUser, email: targetEmail };
+      if (storedUserStr) {
+          try {
+              currentUserState = { ...currentUserState, ...JSON.parse(storedUserStr) };
+          } catch(e) {
+              console.error("Failed to parse user data, starting fresh.", e);
+          }
+      }
 
-    const storageKey = getUserStorageKey(targetEmail);
-    const storedUserStr = localStorage.getItem(storageKey);
-    let currentUserState: User = storedUserStr ? JSON.parse(storedUserStr) : { ...defaultUser, email: targetEmail };
+      if (currentUserState.plan !== 'Free' && currentUserState.planExpiration && isPast(new Date(currentUserState.planExpiration))) {
+          currentUserState = { ...defaultUser, email: targetEmail, lastCreditReset: new Date().toISOString().split('T')[0] };
+          toast({
+              title: 'Previous Plan Expired',
+              description: `Resetting to a Free plan before applying new purchase.`,
+          });
+      }
 
-    if (currentUserState.plan !== 'Free' && currentUserState.planExpiration && isPast(new Date(currentUserState.planExpiration))) {
-        currentUserState = { ...defaultUser, email: targetEmail, lastCreditReset: new Date().toISOString().split('T')[0] };
-    }
+      const newCredits = currentUserState.credits + plan.credits;
+      const newExpiration = add(new Date(), { days: plan.durationDays || 30 }).toISOString();
+      
+      let newPlanName = currentUserState.plan;
+      if (plan.name === 'Pro' || plan.name === 'Mega') {
+          newPlanName = plan.name;
+      }
 
-    const newCredits = currentUserState.credits + plan.credits;
-    const newExpiration = add(new Date(), { days: plan.durationDays || 30 }).toISOString();
-    
-    let newPlanName = currentUserState.plan;
-    // If buying a subscription plan (Pro/Mega), it becomes the new base plan.
-    if (plan.name === 'Pro' || plan.name === 'Mega') {
-        newPlanName = plan.name;
-    } else if (plan.name === 'Booster Pack' && currentUserState.plan === 'Free') {
-       // A booster pack on a free plan doesn't change the plan name, just adds credits and an expiration.
-       // The plan will revert to Free with daily credits once the boosted credits expire.
-    }
+      const updatedUser: User = {
+          ...currentUserState,
+          email: targetEmail,
+          plan: newPlanName,
+          credits: newCredits,
+          planExpiration: newExpiration,
+      };
+      
+      localStorage.setItem(storageKey, JSON.stringify(updatedUser));
+      
+      login(targetEmail);
 
+      setPlanToPurchase(null);
+      setActivationDialogOpen(false);
 
-    const updatedUser: User = {
-        ...currentUserState,
-        email: targetEmail,
-        plan: newPlanName,
-        credits: newCredits,
-        planExpiration: newExpiration,
-    };
-    
-    localStorage.setItem(storageKey, JSON.stringify(updatedUser));
-    
-    if (targetEmail === user.email) {
-        setUser(updatedUser);
+      toast({
+        title: `${plan.name} Activated!`,
+        description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
+      });
     } else {
-        login(targetEmail);
+      setPlanToPurchase(planName);
+      setActivationDialogOpen(true);
+      toast({
+          title: 'Activate Your Purchase',
+          description: "After checkout, enter the exact email you used to pay to activate your plan.",
+          duration: 9000,
+      });
     }
-
-    setPlanToPurchase(null);
-    setActivationDialogOpen(false);
-
-    toast({
-      title: `${plan.name} Activated!`,
-      description: `${plan.credits.toLocaleString()} credits have been added to your account.`,
-    });
-  }, [getPlanByName, user.email, toast, login]);
+  }, [getPlanByName, toast, login]);
 
   const logout = useCallback(() => {
     if (user.email) {

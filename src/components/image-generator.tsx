@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,8 +26,8 @@ const colorPalettes = ["None", "Default", "Cool Tones", "Warm Tones", "Pastel Dr
 const qualities = ["Standard (1080p)", "4K Quality"];
 const models = [
     { id: 'pollinations', name: 'Pollinations' },
-    { id: 'googleai/gemini-2.0-flash-preview-image-generation', name: 'Google Imagen 2 (Fast)', premium: true },
-    { id: 'googleai/imagen-3.0-generate-preview-0611', name: 'Google Imagen 3 (Highest Quality)', premium: true },
+    { id: 'googleai/gemini-2.0-flash-preview-image-generation', name: 'Google Imagen 2 (Fast)' },
+    { id: 'googleai/imagen-3.0-generate-preview-0611', name: 'Google Imagen 3 (Highest Quality)' },
 ];
 
 interface GenerationSettings {
@@ -61,11 +62,10 @@ const getAspectRatioForCss = (ratioString: string | undefined): string => {
 };
 
 export default function ImageGenerator() {
-  const { user, deductCredits, getPlanByName, isLoggedIn, setActivationDialogOpen } = useUser();
+  const { user, deductCredits, getPlanByName } = useUser();
   const { toast } = useToast();
   
   const currentPlan = getPlanByName(user.plan);
-  const isProOrMegaPlan = user.plan === 'Pro' || user.plan === 'Mega';
   const costPerGeneration = currentPlan?.costPerGeneration ?? 2;
   const canGenerate = user.credits >= costPerGeneration;
 
@@ -73,30 +73,19 @@ export default function ImageGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[] | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  
+  const activeModel = models.find(m => m.id === settings.model);
 
   useEffect(() => {
     try {
       const savedSettings = localStorage.getItem('imageGeneratorSettings');
       if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        if (!isProOrMegaPlan) {
-            if (parsedSettings.quality === '4K Quality') {
-              parsedSettings.quality = 'Standard (1080p)';
-            }
-            const selectedModel = models.find(m => m.id === parsedSettings.model);
-            if (selectedModel?.premium) {
-              const nonPremiumModel = models.find(m => !m.premium);
-              if (nonPremiumModel) {
-                  parsedSettings.model = nonPremiumModel.id;
-              }
-            }
-        }
-        setSettings(parsedSettings);
+        setSettings(JSON.parse(savedSettings));
       }
     } catch (error) {
       console.error("Failed to parse settings from localStorage", error);
     }
-  }, [isProOrMegaPlan]);
+  }, []);
 
   useEffect(() => {
     try {
@@ -105,26 +94,29 @@ export default function ImageGenerator() {
       console.error("Failed to save settings to localStorage", error);
     }
   }, [settings]);
-  
-  useEffect(() => {
-    if (!isProOrMegaPlan) {
-        if (settings.quality === '4K Quality') {
-            handleSettingChange('quality', 'Standard (1080p)');
-        }
-        const selectedModel = models.find(m => m.id === settings.model);
-        if (selectedModel?.premium) {
-            const nonPremiumModel = models.find(m => !m.premium);
-            if (nonPremiumModel) {
-              handleSettingChange('model', nonPremiumModel.id);
-            }
-        }
-    }
-  }, [isProOrMegaPlan, settings.quality, settings.model]);
 
   const handleSettingChange = (key: keyof GenerationSettings, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
-  
+
+  useEffect(() => {
+    let modelId = 'pollinations';
+    if (user.plan === 'Pro') {
+      modelId = 'googleai/gemini-2.0-flash-preview-image-generation';
+    } else if (user.plan === 'Mega') {
+      modelId = 'googleai/imagen-3.0-generate-preview-0611';
+    }
+
+    let newQuality = settings.quality;
+    if (user.plan !== 'Pro' && user.plan !== 'Mega' && settings.quality === '4K Quality') {
+      newQuality = 'Standard (1080p)';
+    }
+
+    if (settings.model !== modelId || settings.quality !== newQuality) {
+      setSettings(prev => ({ ...prev, model: modelId, quality: newQuality }));
+    }
+  }, [user.plan, settings.model, settings.quality]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!settings.prompt) {
@@ -192,7 +184,6 @@ export default function ImageGenerator() {
             }
 
         } else {
-            // Genkit Model Logic
             const input: GenerateImageInput = {
                 prompt: settings.prompt,
                 style: settings.style === 'None' ? undefined : settings.style,
@@ -242,12 +233,9 @@ export default function ImageGenerator() {
 
   const handleDownload = async (imageSrc: string, index: number) => {
     const fileName = `imagenmax-ai-creation-${index + 1}.png`;
-
     try {
-        const response = await fetch(imageSrc, { cache: 'no-store' }); // Use no-store to avoid CORS issues with cached opaque responses
-        if (!response.ok) {
-          throw new Error('Network response was not ok.');
-        }
+        const response = await fetch(imageSrc, { cache: 'no-store' });
+        if (!response.ok) throw new Error('Network response was not ok.');
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -257,32 +245,16 @@ export default function ImageGenerator() {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error("Download failed, falling back to new tab.", error);
-        // Fallback for CORS or other errors: open in new tab
-        try {
-            const dataUriFetch = await fetch(imageSrc, { cache: 'no-store' });
-            const blob = await dataUriFetch.blob();
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                const base64data = reader.result;
-                const link = document.createElement('a');
-                link.href = base64data as string;
-                link.download = fileName;
-                link.click();
-            }
-            reader.readAsDataURL(blob);
-        } catch (finalError) {
-             toast({
-                title: "Download failed",
-                description: "Opening image in a new tab for you to save manually.",
-                variant: "destructive",
-            });
-            window.open(imageSrc, '_blank');
-        }
-      }
+    } catch (error) {
+        console.error("Download failed due to network or CORS issues:", error);
+        toast({
+            title: "Download Failed",
+            description: "Could not download the image directly. Please try saving it from the new tab.",
+            variant: "destructive",
+        });
+        window.open(imageSrc, '_blank');
+    }
   };
-
 
   return (
     <section id="generator" className="container mx-auto py-12 px-4">
@@ -324,21 +296,12 @@ export default function ImageGenerator() {
                   </AccordionTrigger>
                   <AccordionContent className="pt-4">
                     <div className="space-y-2 mb-6">
-                        <Label className="flex items-center gap-2 text-sm"><BrainCircuit size={14} /> AI Model</Label>
-                        <Select value={settings.model} onValueChange={(v) => handleSettingChange('model', v)} disabled={isLoading}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {models.map(m => (
-                                <SelectItem
-                                    key={m.id}
-                                    value={m.id}
-                                    disabled={m.premium && !isProOrMegaPlan}
-                                >
-                                    {m.name}{m.premium && !isProOrMegaPlan && ' (Pro/Mega plan required)'}
-                                </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                      <Label className="flex items-center gap-2 text-sm"><BrainCircuit size={14} /> AI Model</Label>
+                      <Input
+                        value={`${activeModel?.name || 'Default'} (Active for ${user.plan} plan)`}
+                        disabled
+                        className="text-muted-foreground font-medium"
+                      />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
                       <div className="space-y-2">
@@ -385,9 +348,9 @@ export default function ImageGenerator() {
                               <SelectItem
                                 key={s}
                                 value={s}
-                                disabled={s === '4K Quality' && !isProOrMegaPlan}
+                                disabled={s === '4K Quality' && user.plan !== 'Pro' && user.plan !== 'Mega'}
                               >
-                                {s}{s === '4K Quality' && !isProOrMegaPlan && ' (Pro/Mega plan required)'}
+                                {s}{s === '4K Quality' && user.plan !== 'Pro' && user.plan !== 'Mega' && ' (Pro/Mega plan required)'}
                               </SelectItem>
                             ))}
                           </SelectContent>

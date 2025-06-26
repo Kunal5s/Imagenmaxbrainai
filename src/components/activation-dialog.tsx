@@ -30,6 +30,7 @@ export function ActivationDialog() {
 
   const handleActivation = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!email || !email.includes('@')) {
        toast({
         title: 'Invalid Email',
@@ -39,11 +40,22 @@ export function ActivationDialog() {
       return;
     }
 
+    const allowedDomains = ['gmail.com', 'yahoo.com'];
+    const emailDomain = email.split('@')[1];
+    if (!allowedDomains.includes(emailDomain?.toLowerCase())) {
+      toast({
+        title: 'Unsupported Email Provider',
+        description: 'For security and to prevent abuse, please use a Gmail or Yahoo account.',
+        variant: 'destructive',
+        duration: 9000,
+      });
+      return;
+    }
+
+
     if (planToPurchase) {
-      // If a purchase flow was started, activate the specific plan for the entered email.
       activatePlan(planToPurchase, email);
     } else {
-      // If just logging in without a specific plan purchase in mind.
       login(email);
       setActivationDialogOpen(false);
       toast({
@@ -60,7 +72,7 @@ export function ActivationDialog() {
           <DialogHeader>
             <DialogTitle>{planToPurchase ? `Activate ${planToPurchase}` : 'Access Your Account'}</DialogTitle>
             <DialogDescription>
-              To activate your purchase or access your account, enter the <strong>exact same email address</strong> you used at checkout.
+              To activate your purchase or access your account, enter the <strong>exact same email address</strong> you used at checkout. Only Gmail and Yahoo accounts are supported.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -73,7 +85,7 @@ export function ActivationDialog() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@example.com"
+                placeholder="your.email@gmail.com"
                 className="col-span-3"
                 required
               />
