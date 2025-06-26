@@ -23,7 +23,7 @@ export interface User {
   plan: Plan['name'];
   credits: number;
   planExpiration: string | null;
-  lastCreditReset?: string | null; // YYYY-MM-DD
+  lastCreditReset?: string | null; // YYYY-MM-DD - Now only used to mark when free credits were given
 }
 
 interface UserContextType {
@@ -56,9 +56,9 @@ export const plans: Plan[] = [
     priceSuffix: '',
     description: 'For starters and hobbyists.',
     features: [
-      '10 free credits (renews daily)',
+      '10 free credits (one-time)',
       'Standard Quality (1080p)',
-      'Access to all models',
+      'Pollinations AI Model',
       'Personal use license',
     ],
     credits: 10,
@@ -73,9 +73,8 @@ export const plans: Plan[] = [
     description: 'For professionals and creators.',
     features: [
       '3,000 credits per month',
-      'Fast generation speed',
+      'Google Imagen 2 Model',
       '4K Ultra-High Quality',
-      'Access to all AI models',
       'Commercial use license',
       'Credits expire after 30 days',
     ],
@@ -92,9 +91,8 @@ export const plans: Plan[] = [
     description: 'For power users and teams.',
     features: [
       '10,000 credits per month',
-      'Lightning-fast speed',
+      'Google Imagen 3 Model',
       '4K Ultra-High Quality',
-      'Access to all AI models',
       'Team collaboration features',
       'Credits expire after 30 days',
     ],
@@ -111,7 +109,7 @@ export const plans: Plan[] = [
     description: 'Add-on credit top-up.',
     features: [
       '1,000 credits',
-      'Immediately fast generation',
+      'Pollinations AI Model',
       'Can be added to any plan',
       'Credits expire after 30 days',
     ],
@@ -145,12 +143,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (!email) {
       const sessionUserStr = localStorage.getItem('sessionUser');
       if (sessionUserStr) {
-        const sessionUser: User = JSON.parse(sessionUserStr);
-        if (sessionUser.lastCreditReset !== today) {
-          sessionUser.credits = 10;
-          sessionUser.lastCreditReset = today;
-        }
-        setUser(sessionUser);
+        setUser(JSON.parse(sessionUserStr));
       } else {
         setUser({ ...defaultUser, lastCreditReset: today });
       }
@@ -164,13 +157,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         if (storedUser.plan !== 'Free' && storedUser.planExpiration && isPast(new Date(storedUser.planExpiration))) {
             toast({
                 title: 'Plan Expired',
-                description: `Your ${storedUser.plan} plan has expired. You are now on the Free plan.`,
+                description: `Your ${storedUser.plan} plan has expired. You have 0 credits. Please upgrade to continue.`,
                 variant: 'destructive',
             });
-            storedUser = { ...defaultUser, email, lastCreditReset: today };
-        } else if (storedUser.plan === 'Free' && storedUser.lastCreditReset !== today) {
-            storedUser.credits = 10;
-            storedUser.lastCreditReset = today;
+            storedUser = { ...defaultUser, email, credits: 0, plan: 'Free', planExpiration: null, lastCreditReset: storedUser.lastCreditReset };
         }
         setUser(storedUser);
       } else {
@@ -228,7 +218,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (currentUserState.plan !== 'Free' && currentUserState.planExpiration && isPast(new Date(currentUserState.planExpiration))) {
-          currentUserState = { ...defaultUser, email: targetEmail, lastCreditReset: new Date().toISOString().split('T')[0] };
+          currentUserState = { ...defaultUser, email: targetEmail, lastCreditReset: new Date().toISOString().split('T')[0], credits: 0 };
           toast({
               title: 'Previous Plan Expired',
               description: `Resetting to a Free plan before applying new purchase.`,
@@ -242,6 +232,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (plan.name === 'Pro' || plan.name === 'Mega') {
           newPlanName = plan.name;
       }
+      if (currentUserState.plan === 'Free') {
+        newPlanName = plan.name;
+      }
+
 
       const updatedUser: User = {
           ...currentUserState,
