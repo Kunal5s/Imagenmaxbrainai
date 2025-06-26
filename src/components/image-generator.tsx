@@ -27,6 +27,7 @@ const qualities = ["Standard (1080p)", "4K Quality"];
 const models = [
     { id: 'googleai/gemini-2.0-flash-preview-image-generation', name: 'Gemini 2.0 Flash (Fast)' },
     { id: 'googleai/imagen-3.0-generate-preview-0611', name: 'Google Imagen 3 (Highest Quality)', premium: true },
+    { id: 'pollinations', name: 'Pollinations (Free & Unlimited)' },
 ];
 
 interface GenerationSettings {
@@ -144,22 +145,55 @@ export default function ImageGenerator() {
       toast({ title: 'Prompt Required', description: 'Please enter a prompt to generate images.', variant: 'destructive' });
       return;
     }
-    
+
+    setIsLoading(true);
+    setGeneratedImages(null);
+    setPromptSuggestions(null);
+    setApiError(null);
+
+    if (settings.model === 'pollinations') {
+        try {
+            const finalPrompt = [
+                settings.prompt,
+                settings.style,
+                settings.mood,
+                settings.lighting,
+                settings.colorPalette,
+                `aspect ratio ${settings.aspectRatio}`
+            ].filter(p => p && p !== 'None' && p !== 'Default').join(', ');
+
+            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`;
+            
+            setGeneratedImages([imageUrl]);
+            toast({
+                title: 'Success!',
+                description: 'Image generated with Pollinations. No credits deducted.'
+            });
+        } catch (error) {
+           const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+           toast({
+             title: 'Image Generation Failed',
+             description: errorMessage,
+             variant: 'destructive',
+           });
+        } finally {
+            setIsLoading(false);
+        }
+        return;
+    }
+
+    // Genkit Model Logic
     if (!canGenerate) {
         toast({
             title: 'Out of Credits',
             description: 'You do not have enough credits. Please purchase a new plan or booster pack to continue.',
             variant: 'destructive',
         });
+        setIsLoading(false);
         return;
     }
 
-    setIsLoading(true);
-    setGeneratedImages(null);
-    setPromptSuggestions(null);
-    setApiError(null);
     const creditsBeforeGeneration = user.credits;
-
     try {
       const input: GenerateImageInput = {
         prompt: settings.prompt,
@@ -219,12 +253,17 @@ It is highly recommended to set the API key as an environment variable named \`G
   };
 
   const handleDownload = (imageSrc: string, index: number) => {
-    const link = document.createElement('a');
-    link.href = imageSrc;
-    link.download = `imagenmax-ai-creation-${index + 1}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (imageSrc.startsWith('data:image')) {
+      const link = document.createElement('a');
+      link.href = imageSrc;
+      link.download = `imagenmax-ai-creation-${index + 1}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // For external URLs like Pollinations, open in a new tab.
+      window.open(imageSrc, '_blank');
+    }
   };
 
 
@@ -339,7 +378,7 @@ It is highly recommended to set the API key as an environment variable named \`G
                       </div>
                       <div className="space-y-2">
                           <Label className="flex items-center gap-2 text-sm"><Diamond size={14} /> Quality</Label>
-                          <Select value={settings.quality} onValueChange={(v) => handleSettingChange('quality', v)} disabled={isLoading}>
+                          <Select value={settings.quality} onValueChange={(v) => handleSettingChange('quality', v)} disabled={isLoading || settings.model === 'pollinations'}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                             {qualities.map(s => (
@@ -364,9 +403,15 @@ It is highly recommended to set the API key as an environment variable named \`G
                       type="submit"
                       size="lg"
                       className="w-full sm:w-auto flex-grow font-bold hover:scale-105 transition-transform"
-                      disabled={isLoading || !canGenerate}
+                      disabled={isLoading || (settings.model !== 'pollinations' && !canGenerate)}
                   >
-                      {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>}
+                      {isLoading ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</>
+                      ) : settings.model === 'pollinations' ? (
+                        <><Wand2 className="mr-2 h-4 w-4" />Generate Image (Free)</>
+                      ) : (
+                        <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>
+                      )}
                   </Button>
                   <Button
                       type="button"
@@ -380,7 +425,7 @@ It is highly recommended to set the API key as an environment variable named \`G
                       Suggest Prompts
                   </Button>
               </div>
-              {!canGenerate && (
+              {!canGenerate && settings.model !== 'pollinations' && (
                   <div className="text-center text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                      You're out of credits.
                      <Button variant="link" asChild className="p-1 h-auto"><Link href="/pricing">Purchase a plan</Link></Button> to continue generating.
@@ -409,11 +454,19 @@ It is highly recommended to set the API key as an environment variable named \`G
           <div className="flex flex-col items-center gap-4 text-muted-foreground">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
             <p className="text-lg font-medium">Your vision is materializing...</p>
-            <p className="text-sm">This can take a few moments. Four images are being generated.</p>
+            <p className="text-sm">
+                {settings.model === 'pollinations'
+                ? 'Your image is being generated.'
+                : 'This can take a few moments. Four images are being generated.'}
+            </p>
           </div>
         )}
         {!isLoading && generatedImages && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className={cn(
+              "grid gap-4",
+              generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 max-w-2xl mx-auto"
+            )}
+          >
             {generatedImages.map((imageSrc, index) => (
               <div
                 key={index}
