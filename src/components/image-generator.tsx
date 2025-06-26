@@ -255,16 +255,42 @@ export default function ImageGenerator() {
     }
   };
 
-  const handleDownload = (imageSrc: string, index: number) => {
+  const handleDownload = async (imageSrc: string, index: number) => {
+    const fileName = `imagenmax-ai-creation-${index + 1}.png`;
+
     if (imageSrc.startsWith('data:image')) {
+      // Direct download for data URIs
       const link = document.createElement('a');
       link.href = imageSrc;
-      link.download = `imagenmax-ai-creation-${index + 1}.png`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } else {
-      window.open(imageSrc, '_blank');
+      // Fetch and download for external URLs (Pollinations)
+      try {
+        const response = await fetch(imageSrc);
+        if (!response.ok) {
+          throw new Error('Network response was not ok.');
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Download failed, falling back to new tab.", error);
+        toast({
+            title: "Download failed",
+            description: "Opening image in a new tab for you to save manually.",
+            variant: "destructive",
+        });
+        window.open(imageSrc, '_blank');
+      }
     }
   };
 
