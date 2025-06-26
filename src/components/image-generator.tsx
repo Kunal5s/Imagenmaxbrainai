@@ -27,7 +27,7 @@ const qualities = ["Standard (1080p)", "4K Quality"];
 const models = [
     { id: 'googleai/gemini-2.0-flash-preview-image-generation', name: 'Gemini 2.0 Flash (Fast)' },
     { id: 'googleai/imagen-3.0-generate-preview-0611', name: 'Google Imagen 3 (Highest Quality)', premium: true },
-    { id: 'pollinations', name: 'Pollinations (Free & Unlimited)' },
+    { id: 'pollinations', name: 'Pollinations' },
 ];
 
 interface GenerationSettings {
@@ -145,44 +145,7 @@ export default function ImageGenerator() {
       toast({ title: 'Prompt Required', description: 'Please enter a prompt to generate images.', variant: 'destructive' });
       return;
     }
-
-    setIsLoading(true);
-    setGeneratedImages(null);
-    setPromptSuggestions(null);
-    setApiError(null);
-
-    if (settings.model === 'pollinations') {
-        try {
-            const finalPrompt = [
-                settings.prompt,
-                settings.style,
-                settings.mood,
-                settings.lighting,
-                settings.colorPalette,
-                `aspect ratio ${settings.aspectRatio}`
-            ].filter(p => p && p !== 'None' && p !== 'Default').join(', ');
-
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`;
-            
-            setGeneratedImages([imageUrl]);
-            toast({
-                title: 'Success!',
-                description: 'Image generated with Pollinations. No credits deducted.'
-            });
-        } catch (error) {
-           const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-           toast({
-             title: 'Image Generation Failed',
-             description: errorMessage,
-             variant: 'destructive',
-           });
-        } finally {
-            setIsLoading(false);
-        }
-        return;
-    }
-
-    // Genkit Model Logic
+    
     if (!canGenerate) {
         toast({
             title: 'Out of Credits',
@@ -193,62 +156,97 @@ export default function ImageGenerator() {
         return;
     }
 
+    setIsLoading(true);
+    setGeneratedImages(null);
+    setPromptSuggestions(null);
+    setApiError(null);
+
     const creditsBeforeGeneration = user.credits;
     try {
-      const input: GenerateImageInput = {
-        prompt: settings.prompt,
-        style: settings.style === 'None' ? undefined : settings.style,
-        aspectRatio: settings.aspectRatio,
-        mood: settings.mood === 'None' ? undefined : settings.mood,
-        lighting: settings.lighting === 'None' ? undefined : settings.lighting,
-        colorPalette: settings.colorPalette === 'None' || settings.colorPalette === 'Default' ? undefined : settings.colorPalette,
-        quality: settings.quality,
-        model: settings.model,
-      };
-      
-      const result = await generateImage(input);
+        let imageDataUris: string[] = [];
+        let error: string | undefined = undefined;
 
-      if (result.error || result.imageDataUris.length === 0) {
-        const errorMessage = result.error || 'An unknown error occurred and no images were generated.';
-        toast({
-          title: 'Image Generation Failed',
-          description: `Could not generate images. Credits have not been deducted. ${errorMessage}`,
-          variant: 'destructive',
-          duration: 9000,
-        });
+        if (settings.model === 'pollinations') {
+            const promptParts = [
+                settings.prompt,
+                settings.style,
+                settings.mood,
+                settings.lighting,
+                settings.colorPalette,
+                `aspect ratio ${settings.aspectRatio}`,
+                settings.quality === '4K Quality' ? '4K, ultra-high resolution, photorealistic' : 'high quality, detailed',
+                'no watermark, no text, no logos'
+            ];
+            const finalPrompt = promptParts.filter(p => p && p !== 'None' && p !== 'Default').join(', ');
 
-        if (/API key|permission|denied|billing|quota|safety/i.test(errorMessage)) {
-          setApiError(
-`Image generation failed. This is likely due to an issue with your Google AI API Key.
+            const generationPromises = Array(4).fill(null).map(() => 
+                fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error(`Pollinations API returned status ${res.status}`);
+                        return res.url;
+                    })
+            );
+            
+            const results = await Promise.allSettled(generationPromises);
+            
+            results.forEach(result => {
+                if (result.status === 'fulfilled') {
+                    imageDataUris.push(result.value);
+                } else {
+                    console.error("Pollinations generation failed:", result.reason);
+                }
+            });
 
-Please check the following:
-1.  The API key in the code (\`src/ai/genkit.ts\`) is correct and active.
-2.  Your Google Cloud project associated with the key has billing enabled.
-3.  Your prompt does not violate AI safety policies.
+            if(imageDataUris.length === 0) {
+                error = "Image generation failed with Pollinations model. Please try again.";
+            }
 
-**For production deployment (like on Netlify):**
-It is highly recommended to set the API key as an environment variable named \`GOOGLE_API_KEY\` in your hosting provider's settings instead of leaving it in the code.`
-          );
+        } else {
+            // Genkit Model Logic
+            const input: GenerateImageInput = {
+                prompt: settings.prompt,
+                style: settings.style === 'None' ? undefined : settings.style,
+                aspectRatio: settings.aspectRatio,
+                mood: settings.mood === 'None' ? undefined : settings.mood,
+                lighting: settings.lighting === 'None' ? undefined : settings.lighting,
+                colorPalette: settings.colorPalette === 'None' || settings.colorPalette === 'Default' ? undefined : settings.colorPalette,
+                quality: settings.quality,
+                model: settings.model,
+            };
+            const result = await generateImage(input);
+            imageDataUris = result.imageDataUris;
+            error = result.error;
         }
-      } else {
-        deductCredits();
-        setGeneratedImages(result.imageDataUris);
-        toast({
-            title: 'Success!',
-            description: `${costPerGeneration} credits deducted. You have ${creditsBeforeGeneration - costPerGeneration} credits remaining.`
-        });
-      }
+
+        if (error || imageDataUris.length === 0) {
+            const errorMessage = error || 'An unknown error occurred and no images were generated.';
+            toast({
+                title: 'Image Generation Failed',
+                description: `Could not generate images. Credits have not been deducted. ${errorMessage}`,
+                variant: 'destructive',
+                duration: 9000,
+            });
+            if (/API key|permission|denied|billing|quota|safety/i.test(errorMessage)) {
+                setApiError('Image generation failed. This is likely due to an issue with the backend API configuration. Please check your API key, billing status, or safety settings.');
+            }
+        } else {
+            deductCredits();
+            setGeneratedImages(imageDataUris);
+            toast({
+                title: 'Success!',
+                description: `${costPerGeneration} credits deducted. You have ${creditsBeforeGeneration - costPerGeneration} credits remaining.`
+            });
+        }
     } catch (error) {
-      console.error('Failed to generate image', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-      
-      toast({
-        title: 'Image Generation Failed',
-        description: `Could not generate images. Credits have not been deducted. ${errorMessage}`,
-        variant: 'destructive',
-      });
+        console.error('Failed to generate image', error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+        toast({
+            title: 'Image Generation Failed',
+            description: `Could not generate images. Credits have not been deducted. ${errorMessage}`,
+            variant: 'destructive',
+        });
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -261,7 +259,6 @@ It is highly recommended to set the API key as an environment variable named \`G
       link.click();
       document.body.removeChild(link);
     } else {
-      // For external URLs like Pollinations, open in a new tab.
       window.open(imageSrc, '_blank');
     }
   };
@@ -403,14 +400,12 @@ It is highly recommended to set the API key as an environment variable named \`G
                       type="submit"
                       size="lg"
                       className="w-full sm:w-auto flex-grow font-bold hover:scale-105 transition-transform"
-                      disabled={isLoading || (settings.model !== 'pollinations' && !canGenerate)}
+                      disabled={isLoading || !canGenerate}
                   >
                       {isLoading ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</>
-                      ) : settings.model === 'pollinations' ? (
-                        <><Wand2 className="mr-2 h-4 w-4" />Generate Image (Free)</>
                       ) : (
-                        <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images</>
+                        <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images ({costPerGeneration} credits)</>
                       )}
                   </Button>
                   <Button
@@ -425,7 +420,7 @@ It is highly recommended to set the API key as an environment variable named \`G
                       Suggest Prompts
                   </Button>
               </div>
-              {!canGenerate && settings.model !== 'pollinations' && (
+              {!canGenerate && (
                   <div className="text-center text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                      You're out of credits.
                      <Button variant="link" asChild className="p-1 h-auto"><Link href="/pricing">Purchase a plan</Link></Button> to continue generating.
@@ -443,7 +438,7 @@ It is highly recommended to set the API key as an environment variable named \`G
                     <div className="flex items-start gap-4">
                         <AlertTriangle className="h-6 w-6 flex-shrink-0 mt-1" />
                         <div>
-                            <h3 className="font-bold text-lg mb-2">Action Required: Set API Key</h3>
+                            <h3 className="font-bold text-lg mb-2">Image Generation Error</h3>
                             <p className="text-sm whitespace-pre-wrap leading-relaxed">{apiError}</p>
                         </div>
                     </div>
@@ -455,16 +450,13 @@ It is highly recommended to set the API key as an environment variable named \`G
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
             <p className="text-lg font-medium">Your vision is materializing...</p>
             <p className="text-sm">
-                {settings.model === 'pollinations'
-                ? 'Your image is being generated.'
-                : 'This can take a few moments. Four images are being generated.'}
+                This can take a few moments. Four images are being generated.
             </p>
           </div>
         )}
         {!isLoading && generatedImages && (
           <div className={cn(
-              "grid gap-4",
-              generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 max-w-2xl mx-auto"
+              "grid gap-4 grid-cols-1 sm:grid-cols-2"
             )}
           >
             {generatedImages.map((imageSrc, index) => (

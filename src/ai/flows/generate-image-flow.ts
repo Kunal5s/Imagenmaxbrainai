@@ -44,7 +44,8 @@ const generateImageFlow = ai.defineFlow(
   async (input) => {
     const promptParts = [
         `Primary Subject: ${input.prompt}.`,
-        `You are a master digital artist. Create a visually stunning image based *strictly* on the following creative controls.`
+        `You are a master digital artist. Create a visually stunning image based *strictly* on the following creative controls.`,
+        `The final image must not contain any watermarks, text, signatures, or logos.`
     ];
 
     if (input.style) {

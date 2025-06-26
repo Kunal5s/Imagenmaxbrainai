@@ -12,7 +12,7 @@ export interface Plan {
   description: string;
   features: string[];
   credits: number;
-  costPerGeneration: number;
+  costPerGeneration: number; // This will be the cost per click (which generates 4 images)
   durationDays?: number;
   polarLink: string | null;
   buttonText: string;
@@ -48,6 +48,7 @@ const defaultUser: User = {
   lastCreditReset: null,
 };
 
+// Updated plans as per user request
 export const plans: Plan[] = [
   {
     name: 'Free',
@@ -57,11 +58,11 @@ export const plans: Plan[] = [
     features: [
       '10 free credits (renews daily)',
       'Standard Quality (1080p)',
-      'Access to core models',
+      'Access to all models',
       'Personal use license',
     ],
     credits: 10,
-    costPerGeneration: 2,
+    costPerGeneration: 2, // 2 credits per generation (4 images)
     polarLink: null,
     buttonText: 'Start Generating',
   },
@@ -79,7 +80,7 @@ export const plans: Plan[] = [
       'Credits expire after 30 days',
     ],
     credits: 3000,
-    costPerGeneration: 20,
+    costPerGeneration: 30, // 30 credits per generation (4 images)
     durationDays: 30,
     polarLink: 'https://buy.polar.sh/polar_cl_iQpYIoo3qkW310DMOKN5lXhQo70OHOiLLU5Fp0eZ49f',
     buttonText: 'Upgrade to Pro',
@@ -93,12 +94,12 @@ export const plans: Plan[] = [
       '10,000 credits per month',
       'Lightning-fast speed',
       '4K Ultra-High Quality',
-      'API access (coming soon)',
+      'Access to all AI models',
       'Team collaboration features',
       'Credits expire after 30 days',
     ],
     credits: 10000,
-    costPerGeneration: 30,
+    costPerGeneration: 60, // 60 credits per generation (4 images)
     durationDays: 30,
     polarLink: 'https://buy.polar.sh/polar_cl_xkFeAW6Ib01eE9ya6C6jRJVdkpSmHIb9xMnXL0trOi7',
     buttonText: 'Upgrade to Mega',
@@ -115,7 +116,7 @@ export const plans: Plan[] = [
       'Credits expire after 30 days',
     ],
     credits: 1000,
-    costPerGeneration: 40,
+    costPerGeneration: 40, // 40 credits per generation (4 images)
     durationDays: 30,
     polarLink: 'https://buy.polar.sh/polar_cl_u5vpk1YGAidaW5Lf7PXbDiWqo7jDVyWlv1v0o3G0NAh',
     buttonText: 'Buy Credits',
@@ -236,9 +237,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const newExpiration = add(new Date(), { days: plan.durationDays || 30 }).toISOString();
     
     let newPlanName = currentUserState.plan;
+    // If buying a subscription plan (Pro/Mega), it becomes the new base plan.
     if (plan.name === 'Pro' || plan.name === 'Mega') {
         newPlanName = plan.name;
+    } else if (plan.name === 'Booster Pack' && currentUserState.plan === 'Free') {
+       // A booster pack on a free plan doesn't change the plan name, just adds credits and an expiration.
+       // The plan will revert to Free with daily credits once the boosted credits expire.
     }
+
 
     const updatedUser: User = {
         ...currentUserState,
