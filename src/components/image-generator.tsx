@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wand2, Loader2, Download, Image as ImageIcon, Sparkles, Palette, Ratio, Sun, Smile, Paintbrush, Diamond, AlertTriangle, BrainCircuit } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Palette, Ratio, Sun, Smile, Paintbrush, Diamond, AlertTriangle, BrainCircuit } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 import { useUser } from '@/hooks/use-user-context';
@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateImage, GenerateImageInput } from '@/ai/flows/generate-image-flow';
-import { suggestPrompts } from '@/ai/flows/suggest-prompt-flow';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,7 +48,7 @@ const defaultSettings: GenerationSettings = {
   lighting: 'None',
   colorPalette: 'Default',
   quality: 'Standard (1080p)',
-  model: models[0].id,
+  model: 'pollinations',
 };
 
 const getAspectRatioForCss = (ratioString: string | undefined): string => {
@@ -72,9 +71,7 @@ export default function ImageGenerator() {
 
   const [settings, setSettings] = useState<GenerationSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuggesting, setIsSuggesting] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[] | null>(null);
-  const [promptSuggestions, setPromptSuggestions] = useState<string[] | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -128,23 +125,6 @@ export default function ImageGenerator() {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
   
-  const handleSuggestPrompts = async () => {
-    if (!settings.prompt) {
-      toast({ title: 'Prompt Required', description: 'Please enter an idea to get suggestions.', variant: 'destructive' });
-      return;
-    }
-    setIsSuggesting(true);
-    setPromptSuggestions(null);
-    try {
-      const result = await suggestPrompts({ idea: settings.prompt });
-      setPromptSuggestions(result.suggestions);
-    } catch (error) {
-      toast({ title: 'Suggestion Failed', description: error instanceof Error ? error.message : 'Could not fetch suggestions.', variant: 'destructive' });
-    } finally {
-      setIsSuggesting(false);
-    }
-  };
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!settings.prompt) {
@@ -164,7 +144,6 @@ export default function ImageGenerator() {
 
     setIsLoading(true);
     setGeneratedImages(null);
-    setPromptSuggestions(null);
     setApiError(null);
 
     const creditsBeforeGeneration = user.credits;
@@ -334,23 +313,6 @@ export default function ImageGenerator() {
                   disabled={isLoading}
                 />
               </div>
-
-              {isSuggesting && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  <Skeleton className="h-12 w-full rounded-md" />
-                  <Skeleton className="h-12 w-full rounded-md" />
-                  <Skeleton className="h-12 w-full rounded-md" />
-                </div>
-              )}
-              {promptSuggestions && !isSuggesting && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {promptSuggestions.map((suggestion, i) => (
-                    <Button key={i} variant="outline" size="sm" className="h-auto text-xs whitespace-normal justify-start text-left" onClick={() => handleSettingChange('prompt', suggestion)}>
-                      {suggestion}
-                    </Button>
-                  ))}
-                </div>
-              )}
                 
               <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
                 <AccordionItem value="item-1">
@@ -448,17 +410,6 @@ export default function ImageGenerator() {
                       ) : (
                         <><Wand2 className="mr-2 h-4 w-4" />Generate 4 Images ({costPerGeneration} credits)</>
                       )}
-                  </Button>
-                  <Button
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                      onClick={handleSuggestPrompts}
-                      disabled={isSuggesting || isLoading}
-                  >
-                      {isSuggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                      Suggest Prompts
                   </Button>
               </div>
               {!canGenerate && (
