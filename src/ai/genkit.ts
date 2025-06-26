@@ -11,7 +11,7 @@ import {googleAI} from '@genkit-ai/googleai';
 // moving this to a more secure environment variable management system.
 // ======================================================================================
 
-const GOOGLE_API_KEY = "AIzaSyC0GmkWhdhTe6nW1QMNOcdnixmJSUJNiYs";
+const GOOGLE_API_KEY = "AIzaSyAqzB8Iy4YSdURqL3Sq7osoRq4wv-m_kus";
 
 if (!GOOGLE_API_KEY) {
   // This error will be thrown during the build process if the key is not set,

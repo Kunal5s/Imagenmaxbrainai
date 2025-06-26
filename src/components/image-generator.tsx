@@ -25,9 +25,9 @@ const lightings = ["None", "Bright", "Neon", "Misty", "Ethereal", "Sunset", "Gol
 const colorPalettes = ["None", "Default", "Cool Tones", "Warm Tones", "Pastel Dreams", "Indigo Night", "Infrared Vision", "Monochromatic", "Earthy Tones", "Vibrant Neon", "Vintage Sepia", "Synthwave"];
 const qualities = ["Standard (1080p)", "4K Quality"];
 const models = [
-    { id: 'googleai/gemini-2.0-flash-preview-image-generation', name: 'Gemini 2.0 Flash (Fast)' },
-    { id: 'googleai/imagen-3.0-generate-preview-0611', name: 'Google Imagen 3 (Highest Quality)', premium: true },
     { id: 'pollinations', name: 'Pollinations' },
+    { id: 'googleai/gemini-2.0-flash-preview-image-generation', name: 'Google Imagen 2 (Fast)', premium: true },
+    { id: 'googleai/imagen-3.0-generate-preview-0611', name: 'Google Imagen 3 (Highest Quality)', premium: true },
 ];
 
 interface GenerationSettings {
@@ -88,7 +88,10 @@ export default function ImageGenerator() {
             }
             const selectedModel = models.find(m => m.id === parsedSettings.model);
             if (selectedModel?.premium) {
-              parsedSettings.model = models[0].id;
+              const nonPremiumModel = models.find(m => !m.premium);
+              if (nonPremiumModel) {
+                  parsedSettings.model = nonPremiumModel.id;
+              }
             }
         }
         setSettings(parsedSettings);
@@ -113,7 +116,10 @@ export default function ImageGenerator() {
         }
         const selectedModel = models.find(m => m.id === settings.model);
         if (selectedModel?.premium) {
-            handleSettingChange('model', models[0].id);
+            const nonPremiumModel = models.find(m => !m.premium);
+            if (nonPremiumModel) {
+              handleSettingChange('model', nonPremiumModel.id);
+            }
         }
     }
   }, [isProOrMegaPlan, settings.quality, settings.model]);
@@ -258,18 +264,8 @@ export default function ImageGenerator() {
   const handleDownload = async (imageSrc: string, index: number) => {
     const fileName = `imagenmax-ai-creation-${index + 1}.png`;
 
-    if (imageSrc.startsWith('data:image')) {
-      // Direct download for data URIs
-      const link = document.createElement('a');
-      link.href = imageSrc;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      // Fetch and download for external URLs (Pollinations)
-      try {
-        const response = await fetch(imageSrc);
+    try {
+        const response = await fetch(imageSrc, { cache: 'no-store' }); // Use no-store to avoid CORS issues with cached opaque responses
         if (!response.ok) {
           throw new Error('Network response was not ok.');
         }
@@ -284,14 +280,28 @@ export default function ImageGenerator() {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error("Download failed, falling back to new tab.", error);
-        toast({
-            title: "Download failed",
-            description: "Opening image in a new tab for you to save manually.",
-            variant: "destructive",
-        });
-        window.open(imageSrc, '_blank');
+        // Fallback for CORS or other errors: open in new tab
+        try {
+            const dataUriFetch = await fetch(imageSrc, { cache: 'no-store' });
+            const blob = await dataUriFetch.blob();
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64data = reader.result;
+                const link = document.createElement('a');
+                link.href = base64data as string;
+                link.download = fileName;
+                link.click();
+            }
+            reader.readAsDataURL(blob);
+        } catch (finalError) {
+             toast({
+                title: "Download failed",
+                description: "Opening image in a new tab for you to save manually.",
+                variant: "destructive",
+            });
+            window.open(imageSrc, '_blank');
+        }
       }
-    }
   };
 
 

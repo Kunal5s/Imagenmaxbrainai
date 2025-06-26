@@ -46,7 +46,6 @@ export default function Home() {
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
             Our advanced AI understands a vast range of styles, moods, and compositions, giving you unparalleled control to bring your imagination to life. Whether you're a professional designer, a creative hobbyist, or just curious, our tools are designed for you.
           </p>
-          <Button size="lg" onClick={handleScrollToCreate}>Start Creating Now</Button>
         </div>
       </section>
 
