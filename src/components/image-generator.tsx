@@ -177,14 +177,14 @@ export default function ImageGenerator() {
                 settings.lighting,
                 settings.colorPalette,
                 `ar ${aspectRatioParam}`,
-                settings.quality === '4K Quality' ? '4K, ultra high resolution, photorealistic, sharp focus' : 'high quality, detailed, sharp focus',
-                'no watermark, no logo, no text, no signature'
+                settings.quality === '4K Quality' ? '4K, ultra high resolution, photorealistic, masterpiece, sharp focus' : 'high quality, detailed, clear image, sharp focus',
+                'undesired content: watermark, logo, text, signature, branding'
             ];
             const finalPrompt = promptParts.filter(p => p && p !== 'None' && p !== 'Default').join(', ');
 
             const generationPromises = Array(4).fill(null).map(() => {
                 const seed = Math.floor(Math.random() * 10000000);
-                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?seed=${seed}`;
+                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?seed=${seed}&nologo=true`;
                 return fetch(url)
                     .then(res => {
                         if (!res.ok) throw new Error(`Pollinations API returned status ${res.status}`);
